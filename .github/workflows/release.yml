@@ -5,83 +5,50 @@ on:
     tags:
       - 'v*.*.*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag (e.g., v1.0.0)'
-        required: true
-        default: 'v1.0.0'
 
 env:
   JAVA_VERSION: '21'
-  MAVEN_VERSION: '3.9.9'
 
 jobs:
   # ===========================================
-  # VERSION CHECK
-  # ===========================================
-  version-check:
-    name: Check Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - name: Extract version
-        id: version
-        run: |
-          VERSION="debug"
-          if [[ "${{ github.event.inputs.version }}" != "" ]]; then
-            VERSION="${{ github.event.inputs.version }}"
-          elif [[ "${{ github.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            VERSION="${{ github.ref_name }}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
-
-  # ===========================================
-  # BUILD JAVA (Main Release)
+  # BUILD JAVA
   # ===========================================
   build-java:
     name: Build Java
     runs-on: ubuntu-latest
-    needs: version-check
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java ${{ env.JAVA_VERSION }}
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: Download Maven
+      - name: Build with Maven
         run: |
-          curl -fsSL https://archive.apache.org/dist/maven/maven-3/${{ env.MAVEN_VERSION }}/binaries/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | tar -xzf - -C /tmp
-          echo "/tmp/apache-maven-${{ env.MAVEN_VERSION }}/bin" >> $GITHUB_PATH
+          mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am
 
-      - name: Build
+      - name: List JARs
         run: |
-          echo "Building simplicity-core and simplicity-model-binder..."
-          mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am -q
-          ls -la simplicity-core/target/
-          ls -la simplicity-model-binder/target/
+          find . -name "*.jar" -path "*/target/*" | head -10
 
       - name: Upload JAR Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: java-jars
+          name: simplicity-jars
           path: |
             simplicity-core/target/*.jar
             simplicity-model-binder/target/*.jar
           retention-days: 30
 
   # ===========================================
-  # BUILD PWA (Optional)
+  # BUILD PWA
   # ===========================================
   build-pwa:
     name: Build PWA
     runs-on: ubuntu-latest
-    needs: version-check
     continue-on-error: true
     steps:
       - name: Checkout
@@ -92,57 +59,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install and Build
+      - name: Build PWA
         run: |
           cd simplicity-web
-          npm install --silent
-          npm run build || echo "PWA build failed, continuing..."
+          npm install
+          npm run build
 
       - name: Upload PWA
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: pwa-dist
           path: simplicity-web/dist
-          retention-days: 30
-
-  # ===========================================
-  # BUILD ANDROID (Optional)
-  # ===========================================
-  build-android:
-    name: Build Android
-    runs-on: ubuntu-latest
-    needs: version-check
-    continue-on-error: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Build APK
-        run: |
-          cd simplicity-android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --warning-mode=none || echo "Android build failed"
-
-      - name: Find APK
-        run: |
-          find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: android-apk
-          path: simplicity-android/app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
   # ===========================================
@@ -151,85 +78,81 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [version-check, build-java]
+    needs: build-java
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download JAR artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: java-jars
+          name: simplicity-jars
           path: jars
 
-      - name: Download PWA artifacts
+      - name: Download PWA
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
           name: pwa-dist
           path: pwa
-          if-no-files-found: ignore
 
-      - name: Download APK artifacts
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          name: android-apk
-          path: android
-          if-no-files-found: ignore
-
-      - name: List files
+      - name: Show files
         run: |
-          echo "=== JAR Files ==="
+          echo "JAR files:"
           ls -la jars/
-          echo "=== PWA Files ==="
-          ls -la pwa/ 2>/dev/null || echo "No PWA files"
-          echo "=== APK Files ==="
-          ls -la android/ 2>/dev/null || echo "No APK files"
+          echo "PWA files:"
+          ls -la pwa/ 2>/dev/null || echo "No PWA"
 
       - name: Create Release Notes
         run: |
-          cat > RELEASE_NOTES.md << 'EOF'
-          # Simplicity AI - Local AI Model Binder
-          
+          cat > RELEASE_NOTES.md << 'ENDOFNOTES'
+          # Simplicity AI v1.0.0
+
           ## Downloads
 
           ### Java JAR Files
-          Run with: `java -jar <jar-file>`
+          - `simplicity-core-*.jar` - Core domain models
+          - `simplicity-model-binder-*.jar` - Model bindings (Ollama, LM Studio, etc.)
 
-          ### PWA (Progressive Web App)
-          Host the PWA folder on GitHub Pages or any web server.
+          ### Usage
+          ```bash
+          java -jar simplicity-model-binder-*.jar
+          ```
 
-          ### Android APK
-          Install the APK on your Android device.
+          ## What's Included
+
+          ### Local AI Support
+          - **Ollama** (localhost:11434) - 20+ models
+          - **LM Studio** (localhost:1234) - GGUF models
+
+          ### Cloud Providers
+          - OpenAI (GPT-4, o1)
+          - Anthropic (Claude)
+          - Google (Gemini)
+          - And more...
 
           ## Getting Started
 
-          1. Install Ollama from https://ollama.ai
+          1. Install [Ollama](https://ollama.ai)
           2. Pull a model: `ollama pull llama3`
-          3. Run: `java -jar simplicity-model-binder-*.jar`
+          3. Run the JAR and chat with local AI!
 
-          ## Features
-
-          - Local AI support (no API keys required)
-          - Ollama integration (20+ models)
-          - LM Studio integration (GGUF format)
-          - Cross-platform: Windows, macOS, Linux, Web, Android
-          - Streaming responses
-          - Health monitoring
-          EOF
+          ## Web App (PWA)
+          
+          The PWA folder can be hosted on GitHub Pages or any web server.
+          It connects to local Ollama/LM Studio running on your machine.
+          ENDOFNOTES
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.version-check.outputs.version }}
-          name: Simplicity AI ${{ needs.version-check.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          name: Simplicity AI ${{ github.ref_name }}
           body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false
           files: |
             jars/*.jar
             pwa/**/*
-            android/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
