@@ -8,14 +8,13 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  MAVEN_VERSION: '3.9.9'
 
 jobs:
   # ===========================================
-  # BUILD JAVA
+  # COPY ARTIFACTS (Already built locally)
   # ===========================================
-  build-java:
-    name: Build Java
+  build-and-package:
+    name: Build & Package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,59 +26,33 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: Setup Maven
+      - name: Build Java
         run: |
-          curl -fsSL https://archive.apache.org/dist/maven/maven-3/${{ env.MAVEN_VERSION }}/binaries/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | tar -xzf - -C /tmp
-          echo "/tmp/apache-maven-${{ env.MAVEN_VERSION }}/bin" >> $GITHUB_PATH
+          mvn clean install -DskipTests -pl simplicity-core,simplicity-model-binder -am
 
-      - name: Verify Java
+      - name: Create output dir
+        run: mkdir -p release
+
+      - name: Copy JARs
         run: |
-          java -version
-          echo "JAVA_HOME=$JAVA_HOME"
-          which java
-
-      - name: Build with Maven
-        run: |
-          mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am
-
-      - name: List JARs
-        run: find . -name "*.jar" -path "*/target/*"
-
-      - name: Upload JARs
-        uses: actions/upload-artifact@v4
-        with:
-          name: simplicity-jars
-          path: |
-            simplicity-core/target/*.jar
-            simplicity-model-binder/target/*.jar
-
-  # ===========================================
-  # BUILD PWA
-  # ===========================================
-  build-pwa:
-    name: Build PWA
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+          cp simplicity-core/target/*.jar release/
+          cp simplicity-model-binder/target/*.jar release/
+          ls -la release/
 
       - name: Build PWA
+        if: success()
         run: |
           cd simplicity-web
           npm install
           npm run build
+          cd ..
+          cp -r simplicity-web/dist release/pwa
 
-      - name: Upload PWA
+      - name: Upload Release
         uses: actions/upload-artifact@v4
         with:
-          name: pwa-dist
-          path: simplicity-web/dist
+          name: release
+          path: release
 
   # ===========================================
   # CREATE RELEASE
@@ -87,75 +60,55 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [build-java]
+    needs: build-and-package
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download JARs
+      - name: Download Release
         uses: actions/download-artifact@v4
         with:
-          name: simplicity-jars
-          path: jars
-
-      - name: Download PWA
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          name: pwa-dist
-          path: pwa
+          name: release
+          path: release
 
       - name: Show files
         run: |
-          echo "=== JAR Files ==="
-          ls -la jars/
-          echo "=== PWA ==="
-          ls -la pwa/ 2>/dev/null || echo "No PWA"
+          echo "=== Release Files ==="
+          ls -laR release/
 
       - name: Create Release Notes
         run: |
-          cat > RELEASE_NOTES.md << 'ENDOFNOTES'
+          cat > release/RELEASE_NOTES.md << 'END'
           # Simplicity AI
           
           ## Downloads
 
-          ### Java JAR Files
-          - `simplicity-core-*.jar` - Core domain models
-          - `simplicity-model-binder-*.jar` - Model bindings
-
-          ### Usage
-          ```bash
-          java -jar simplicity-model-binder-*.jar
-          ```
+          ### JAR Files
+          Run with: `java -jar simplicity-model-binder-*.jar`
 
           ## Features
 
-          ### Local AI Support (No API keys needed!)
-          - **Ollama** (localhost:11434) - 20+ models
-          - **LM Studio** (localhost:1234) - GGUF models
-
-          ### Cloud Providers
-          - OpenAI (GPT-4, o1)
-          - Anthropic (Claude)
-          - Google (Gemini)
+          - Local AI (Ollama, LM Studio)
+          - Cloud AI (OpenAI, Anthropic, Google)
+          - No API keys needed for local!
 
           ## Getting Started
 
-          1. Install [Ollama](https://ollama.ai)
-          2. `ollama pull llama3`
-          3. Run the JAR!
-          ENDOFNOTES
+          1. Install Ollama: https://ollama.ai
+          2. Pull model: `ollama pull llama3`
+          3. Run JAR!
+          END
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Simplicity AI ${{ github.ref_name }}
-          body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false
+          body_path: release/RELEASE_NOTES.md
           files: |
-            jars/*.jar
-            pwa/**/*
+            release/*.jar
+            release/pwa/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
