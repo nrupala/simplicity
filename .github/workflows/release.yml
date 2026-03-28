@@ -22,16 +22,18 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'maven'
 
       - name: Build with Maven
-        run: mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am
+        run: |
+          mvn --version
+          mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
 
       - name: Copy JARs
         run: |
           mkdir -p release
-          cp simplicity-core/target/*.jar release/
-          cp simplicity-model-binder/target/*.jar release/
+          cp simplicity-core/target/*.jar release/ 2>/dev/null || echo "No core JARs"
+          cp simplicity-model-binder/target/*.jar release/ 2>/dev/null || echo "No binder JARs"
+          ls -la release/
 
       - name: Build PWA
         run: |
@@ -62,6 +64,9 @@ jobs:
           name: release
           path: .
 
+      - name: List files
+        run: ls -laR
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -70,21 +75,19 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            ## Downloads
+            ## Simplicity AI - Local AI Model Binder
             
-            ### JAR Files
-            Run: `java -jar simplicity-model-binder-*.jar`
+            ### Downloads
+            - JAR files: Run with `java -jar simplicity-*.jar`
+            - PWA: Host the pwa folder on GitHub Pages
             
-            ### PWA
-            Host the pwa folder on any web server.
-            
-            ## Features
+            ### Features
             - Local AI (Ollama, LM Studio) - No API keys!
             - Cloud AI (OpenAI, Anthropic, Google)
             
-            ## Getting Started
+            ### Getting Started
             1. Install Ollama: https://ollama.ai
-            2. Pull model: `ollama pull llama3`
+            2. `ollama pull llama3`
             3. Run the JAR!
           files: |
             *.jar
