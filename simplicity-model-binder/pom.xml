@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.simplicity</groupId>
+        <artifactId>simplicity-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>simplicity-model-binder</artifactId>
+    <packaging>jar</packaging>
+    <name>Simplicity Model Binder</name>
+    <description>
+        Universal model bindings for OpenAI, Anthropic, Google, HuggingFace,
+        Groq, Together AI, Azure, and Local models (Ollama, LM Studio).
+    </description>
+
+    <dependencies>
+        <!-- Core -->
+        <dependency>
+            <groupId>com.simplicity</groupId>
+            <artifactId>simplicity-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- HTTP Client -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>3.2.4</version>
+        </dependency>
+
+        <!-- OpenAI -->
+        <dependency>
+            <groupId>com.theokanning.openai-gpt3-java</groupId>
+            <artifactId>api</artifactId>
+            <version>0.18.2</version>
+        </dependency>
+
+        <!-- JSON -->
+
+        <!-- Reactor (for reactive streams) -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.6.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.17.0</version>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

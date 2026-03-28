@@ -1,0 +1,134 @@
+name: Version Bump
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [closed]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  # ===========================================
+  # AUTO VERSION BUMP ON MERGE TO MAIN
+  # ===========================================
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    outputs:
+      new_version: ${{ steps.version-bump.outputs.new_version }}
+      bump_type: ${{ steps.version-bump.outputs.bump_type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine bump type
+        id: version-bump
+        run: |
+          # Get last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Last tag: $LAST_TAG"
+          
+          # Check commit messages for bump type
+          COMMITS=$(git log --oneline $LAST_TAG..HEAD 2>/dev/null || git log --oneline -10)
+          echo "Commits since last tag:"
+          echo "$COMMITS"
+          
+          # Determine bump type based on commit messages
+          if echo "$COMMITS" | grep -qi "breaking\|breaking change"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -qi "feat\|feature\|add"; then
+            BUMP="minor"
+          else
+            BUMP="patch"
+          fi
+          
+          echo "Bump type: $BUMP"
+          echo "bump_type=$BUMP" >> $GITHUB_OUTPUT
+          
+          # Calculate new version
+          VERSION=${LAST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          
+          case $BUMP in
+            major) ((MAJOR++)); MINOR=0; PATCH=0 ;;
+            minor) ((MINOR++)); PATCH=0 ;;
+            patch) ((PATCH++)) ;;
+          esac
+          
+          NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "New version: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create new tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a ${{ steps.version-bump.outputs.new_version }} -m "Release ${{ steps.version-bump.outputs.new_version }}"
+          git push origin ${{ steps.version-bump.outputs.new_version }}
+
+  # ===========================================
+  # CHECK VERSION CONSISTENCY
+  # ===========================================
+  check-versions:
+    name: Check Version Consistency
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check parent POM version
+        run: |
+          POM_VERSION=$(grep -oP '(?<=<version>)[^<]+' pom.xml | head -1)
+          echo "Parent POM version: $POM_VERSION"
+          
+          # Check simplicity-core
+          CORE_VERSION=$(grep -oP '(?<=<version>)[^<]+' simplicity-core/pom.xml | head -1)
+          echo "simplicity-core version: $CORE_VERSION"
+          
+          # Check simplicity-model-binder
+          BINDER_VERSION=$(grep -oP '(?<=<version>)[^<]+' simplicity-model-binder/pom.xml | head -1)
+          echo "simplicity-model-binder version: $BINDER_VERSION"
+          
+          # All versions should match
+          if [ "$POM_VERSION" != "$CORE_VERSION" ] || [ "$POM_VERSION" != "$BINDER_VERSION" ]; then
+            echo "ERROR: Version mismatch detected!"
+            exit 1
+          fi
+          echo "All versions consistent: $POM_VERSION"
+
+  # ===========================================
+  # VALIDATE CHANGELOG
+  # ===========================================
+  validate-changelog:
+    name: Validate Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check CHANGELOG exists
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            echo "Creating CHANGELOG.md..."
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "All notable changes to this project will be documented in this file." >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "## [Unreleased]" >> CHANGELOG.md
+            echo "### Added" >> CHANGELOG.md
+            echo "### Changed" >> CHANGELOG.md
+            echo "### Deprecated" >> CHANGELOG.md
+            echo "### Removed" >> CHANGELOG.md
+            echo "### Fixed" >> CHANGELOG.md
+            echo "### Security" >> CHANGELOG.md
+            git add CHANGELOG.md
+            git commit -m "docs: add CHANGELOG.md" || true
+          fi
+          cat CHANGELOG.md

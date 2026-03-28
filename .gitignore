@@ -1,0 +1,31 @@
+# Build outputs
+target/
+build/
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Gradle (Android)
+.gradle/
+local.properties
+*.ap_
+*.dex
+
+# JAR files
+*.jar
+
+# Scripts to exclude
+*.ps1.bak
+build-output.txt
+nul

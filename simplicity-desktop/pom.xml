@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.simplicity</groupId>
+        <artifactId>simplicity-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>simplicity-desktop</artifactId>
+    <packaging>jar</packaging>
+    <name>Simplicity Desktop</name>
+    <description>
+        Cross-platform desktop application for Simplicity AI Model Binder.
+        Supports Windows, macOS, and Linux.
+    </description>
+
+    <properties>
+        <main.class>com.simplicity.desktop.Main</main.class>
+        <app.name>Simplicity</app.name>
+        <app.vendor>Simplicity</app.vendor>
+        <app.version>1.0.0</app.version>
+        <jdk.version>21</jdk.version>
+    </properties>
+
+    <dependencies>
+        <!-- Core modules -->
+        <dependency>
+            <groupId>com.simplicity</groupId>
+            <artifactId>simplicity-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.simplicity</groupId>
+            <artifactId>simplicity-model-binder</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- JavaFX for desktop UI -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21.0.2</version>
+            <classifier>linux</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21.0.2</version>
+            <classifier>mac</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21.0.2</version>
+            <classifier>win</classifier>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- JAR plugin with manifest -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Dependency plugin to copy libs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- jpackage for creating native installers -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <name>${app.name}</name>
+                    <version>${app.version}</version>
+                    <vendor>${app.vendor}</vendor>
+                    <mainJar>${project.build.directory}/${project.build.finalName}.jar</mainJar>
+                    <resources>${project.build.directory}/lib</resources>
+                    
+                    <!-- Platform-specific settings -->
+                    <winOptions>
+                        <option>--win-per-user-install</option>
+                        <option>--win-menu</option>
+                        <option>--win-shortcut</option>
+                    </winOptions>
+                    
+                    <macOptions>
+                        <option>--mac-sign</option>
+                        <option>--mac-package-name</option>
+                        <option>${app.name}</option>
+                    </macOptions>
+                    
+                    <linuxOptions>
+                        <option>--linux-deb-maintainer</option>
+                        <option>simplicity@example.com</option>
+                        <option>--linux-menu-group</option>
+                        <option>Utility</option>
+                    </linuxOptions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

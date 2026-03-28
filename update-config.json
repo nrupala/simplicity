@@ -1,0 +1,74 @@
+# Auto-Update Configuration
+# This file defines how the app checks for and applies updates
+
+{
+  "app": {
+    "id": "com.simplicity.app",
+    "name": "Simplicity",
+    "version": "1.0.0"
+  },
+  "updates": {
+    "checkInterval": "1h",
+    "checkOnStartup": true,
+    "autoDownload": true,
+    "autoInstall": false,
+    "minimumVersion": "0.1.0"
+  },
+  "platforms": {
+    "windows": {
+      "provider": "github",
+      "repo": "nrupala/simplicity",
+      "artifactPattern": "Simplicity-*.exe",
+      "installType": "portable"
+    },
+    "macos": {
+      "provider": "github",
+      "repo": "nrupala/simplicity",
+      "artifactPattern": "Simplicity-*.pkg",
+      "installType": "dmg"
+    },
+    "linux": {
+      "provider": "github",
+      "repo": "nrupala/simplicity",
+      "artifactPattern": "Simplicity-*.deb",
+      "installType": "deb"
+    },
+    "android": {
+      "provider": "github",
+      "repo": "nrupala/simplicity",
+      "artifactPattern": "*.apk",
+      "installType": "apk"
+    },
+    "web": {
+      "provider": "cdn",
+      "cacheMaxAge": "86400",
+      "serviceWorker": true
+    }
+  },
+  "notifications": {
+    "updateAvailable": true,
+    "updateDownloaded": true,
+    "updateInstalled": true
+  },
+  "rollback": {
+    "enabled": true,
+    "keepPreviousVersions": 3
+  },
+  "channels": {
+    "stable": {
+      "name": "Stable",
+      "description": "Stable releases",
+      "default": true
+    },
+    "beta": {
+      "name": "Beta",
+      "description": "Beta releases for testing",
+      "enabled": true
+    },
+    "nightly": {
+      "name": "Nightly",
+      "description": "Nightly builds",
+      "enabled": false
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "simplicity-web",
+  "version": "1.0.0",
+  "description": "Simplicity AI - PWA Web Interface",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js,.html",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.7",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.2.0",
+    "vite-plugin-pwa": "^0.19.7",
+    "workbox-window": "^7.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "eslint": "^8.57.0",
+    "vitest": "^1.3.1"
+  }
+}
