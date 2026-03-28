@@ -1,4 +1,4 @@
-# SIMPLICITY: THE NEXT DECADE OF AI
+# SIMPLICITY: 
 
 > **"Your Intelligence. Your Rules. Your Portability. Your Sovereignty."**
 
@@ -286,7 +286,7 @@ Simplicity KG ──┬──► OpenAI Ecosystem
 
 ---
 
-## Comparison: Why We're a Decade Ahead
+## Comparison: Why use Simplicity
 
 | Capability | Perplexity | OpenAI | Google | Simplicity |
 |------------|------------|--------|--------|------------|
