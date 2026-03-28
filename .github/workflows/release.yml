@@ -8,31 +8,34 @@ on:
 
 jobs:
   # ===========================================
-  # BUILD JAVA
+  # BUILD
   # ===========================================
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
+      - name: Install Java
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-21-jdk
+
+      - name: Install Maven
+        run: |
+          sudo apt-get install -y maven
 
       - name: Build with Maven
         run: |
           mvn --version
-          mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
+          mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am
 
-      - name: Copy JARs
+      - name: Copy artifacts
         run: |
           mkdir -p release
-          cp simplicity-core/target/*.jar release/ 2>/dev/null || echo "No core JARs"
-          cp simplicity-model-binder/target/*.jar release/ 2>/dev/null || echo "No binder JARs"
+          cp simplicity-core/target/*.jar release/
+          cp simplicity-model-binder/target/*.jar release/
           ls -la release/
 
       - name: Build PWA
@@ -44,18 +47,18 @@ jobs:
           mkdir -p release/pwa
           cp -r simplicity-web/dist/* release/pwa/
 
-      - name: Upload Release
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: release
           path: release
 
   # ===========================================
-  # CREATE RELEASE
+  # RELEASE
   # ===========================================
   release:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - name: Download
@@ -63,9 +66,6 @@ jobs:
         with:
           name: release
           path: .
-
-      - name: List files
-        run: ls -laR
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
