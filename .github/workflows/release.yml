@@ -17,19 +17,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Java
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-21-jdk
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-      - name: Install Maven
+      - name: Build with Maven Wrapper
         run: |
-          sudo apt-get install -y maven
-
-      - name: Build with Maven
-        run: |
-          mvn --version
-          mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am
+          chmod +x mvnw
+          ./mvnw --version
+          ./mvnw clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am
+          ./mvnw package -DskipTests -pl simplicity-core,simplicity-model-binder -am
 
       - name: Copy artifacts
         run: |
