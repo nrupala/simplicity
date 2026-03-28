@@ -8,6 +8,7 @@ on:
 
 env:
   JAVA_VERSION: '21'
+  MAVEN_VERSION: '3.9.9'
 
 jobs:
   # ===========================================
@@ -26,22 +27,31 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
+      - name: Setup Maven
+        run: |
+          curl -fsSL https://archive.apache.org/dist/maven/maven-3/${{ env.MAVEN_VERSION }}/binaries/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | tar -xzf - -C /tmp
+          echo "/tmp/apache-maven-${{ env.MAVEN_VERSION }}/bin" >> $GITHUB_PATH
+
+      - name: Verify Java
+        run: |
+          java -version
+          echo "JAVA_HOME=$JAVA_HOME"
+          which java
+
       - name: Build with Maven
         run: |
           mvn clean package -DskipTests -pl simplicity-core,simplicity-model-binder -am
 
       - name: List JARs
-        run: |
-          find . -name "*.jar" -path "*/target/*" | head -10
+        run: find . -name "*.jar" -path "*/target/*"
 
-      - name: Upload JAR Artifacts
+      - name: Upload JARs
         uses: actions/upload-artifact@v4
         with:
           name: simplicity-jars
           path: |
             simplicity-core/target/*.jar
             simplicity-model-binder/target/*.jar
-          retention-days: 30
 
   # ===========================================
   # BUILD PWA
@@ -70,7 +80,6 @@ jobs:
         with:
           name: pwa-dist
           path: simplicity-web/dist
-          retention-days: 30
 
   # ===========================================
   # CREATE RELEASE
@@ -78,12 +87,12 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: build-java
+    needs: [build-java]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Artifacts
+      - name: Download JARs
         uses: actions/download-artifact@v4
         with:
           name: simplicity-jars
@@ -98,30 +107,30 @@ jobs:
 
       - name: Show files
         run: |
-          echo "JAR files:"
+          echo "=== JAR Files ==="
           ls -la jars/
-          echo "PWA files:"
+          echo "=== PWA ==="
           ls -la pwa/ 2>/dev/null || echo "No PWA"
 
       - name: Create Release Notes
         run: |
           cat > RELEASE_NOTES.md << 'ENDOFNOTES'
-          # Simplicity AI v1.0.0
-
+          # Simplicity AI
+          
           ## Downloads
 
           ### Java JAR Files
           - `simplicity-core-*.jar` - Core domain models
-          - `simplicity-model-binder-*.jar` - Model bindings (Ollama, LM Studio, etc.)
+          - `simplicity-model-binder-*.jar` - Model bindings
 
           ### Usage
           ```bash
           java -jar simplicity-model-binder-*.jar
           ```
 
-          ## What's Included
+          ## Features
 
-          ### Local AI Support
+          ### Local AI Support (No API keys needed!)
           - **Ollama** (localhost:11434) - 20+ models
           - **LM Studio** (localhost:1234) - GGUF models
 
@@ -129,21 +138,15 @@ jobs:
           - OpenAI (GPT-4, o1)
           - Anthropic (Claude)
           - Google (Gemini)
-          - And more...
 
           ## Getting Started
 
           1. Install [Ollama](https://ollama.ai)
-          2. Pull a model: `ollama pull llama3`
-          3. Run the JAR and chat with local AI!
-
-          ## Web App (PWA)
-          
-          The PWA folder can be hosted on GitHub Pages or any web server.
-          It connects to local Ollama/LM Studio running on your machine.
+          2. `ollama pull llama3`
+          3. Run the JAR!
           ENDOFNOTES
 
-      - name: Create GitHub Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
