@@ -1,12 +1,16 @@
-# SIMPLICITY: THE NEXT DECADE OF AI
+# Simplicity - AI Answer Engine with User-Owned Intelligence
 
-> **"Your Intelligence. Your Rules. Your Portability. Your Sovereignty."**
+> **"The Next Decade of AI - Your Intelligence. Your Rules. Your Portability."**
 
----
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Java Version](https://img.shields.io/badge/Java-21+-green.svg)](https://adoptium.net/)
+[![Build](https://github.com/YOUR_ORG/simplicity/actions/workflows/build.yml/badge.svg)]()
 
-## Executive Summary
+## What is Simplicity?
 
-Simplicity is a fundamentally different approach to AI-powered search and answers. While existing systems like Perplexity.ai, OpenAI, and Google trap your intelligence in their models, Simplicity ensures **YOU own your intelligence forever**.
+Simplicity is a fundamentally different AI answer engine. Unlike systems like Perplexity.ai, OpenAI, or Google where **your intelligence is trapped in their models**, Simplicity ensures **YOU own your intelligence forever**.
+
+### Why We're Different
 
 | Feature | Perplexity | OpenAI | Google | **Simplicity** |
 |---------|-----------|--------|--------|----------------|
@@ -15,300 +19,283 @@ Simplicity is a fundamentally different approach to AI-powered search and answer
 | GPG Key Ownership | ❌ | ❌ | ❌ | ✅ Native Support |
 | Unique User Experience | ❌ | ❌ | ❌ | ✅ Immutable Hash |
 | GAN-RAG Correlation | ❌ | ❌ | ❌ | ✅ Self-Evolving |
+| Personification | ❌ | ❌ | ❌ | ✅ Emotional AI |
 | Cryptographic Sovereignty | ❌ | ❌ | ❌ | ✅ Zero-Knowledge |
-| User-Owned Data | ❌ | ❌ | ❌ | ✅ By Design |
 
 ---
 
-## Core Architecture
+## Quick Start
 
-### The Seven Pillars of Simplicity
+### Prerequisites
+- Java 21+
+- Maven 3.9+
 
+### Build & Run
+```bash
+# Clone
+git clone https://github.com/YOUR_ORG/simplicity.git
+cd simplicity
+
+# Build
+mvn clean install
+
+# Run
+java -jar simplicity-api/target/simplicity-api.jar
+
+# Query
+curl -X POST http://localhost:8080/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Explain quantum computing", "userId": "user-123"}'
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                     SIMPLICITY ARCHITECTURE                         │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🏛️ USER SOVEREIGNTY ENGINE                                   │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • GPG Key Management (User Controls Keys)                     │  │
-│  │  • Certificate Authority (X.509, PGP, WebAuthn)                │  │
-│  │  • Zero-Knowledge Proofs                                      │  │
-│  │  • Immutable Consent Ledger                                    │  │
-│  │  • Homomorphic Encryption (Compute on Encrypted)               │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                              │                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🧠 USER KNOWLEDGE GRAPH (The Unique Asset)                  │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • Entities & Relationships (Owned by User)                    │  │
-│  │  • Adaptive Learning (Grows with User)                        │  │
-│  │  • Unique Experience Hash (Immutable Signature)                 │  │
-│  │  • Intelligence Fingerprint (Cannot Be Copied)                │  │
-│  │  • Personal Evolution Tracking                                 │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                              │                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🔗 CORRELATION ENGINE (Creating Uniqueness)                │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • User Knowledge ↔ Model Capability Correlation             │  │
-│  │  • Dynamic Weighting (Who Knows More?)                       │  │
-│  │  • Topic/Complexity/Style Matching                           │  │
-│  │  • Approach Selection (Guided/Collaborative/Educational)     │  │
-│  │  • Confidence Calibration                                    │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                              │                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🧠 GAN-RAG COUPLING (Self-Improving Intelligence)          │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • Hybrid Retrieval (Vector + Keyword + Knowledge Graph)     │  │
-│  │  • Generator Network (Multiple Candidates)                    │  │
-│  │  • Discriminator Network (Accuracy/Relevance/Personal)        │  │
-│  │  • Adversarial Training (Generator vs Discriminator)          │  │
-│  │  • Continuous Learning (Implicit + Explicit Feedback)         │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                              │                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🎭 PERSONIFICATION ENGINE (The Human Touch)                 │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • Emotional Intelligence (Curious, Empathetic, Humble)       │  │
-│  │  • Personality Profiles (Warm, Professional, Creative)       │  │
-│  │  • Expression Generator (Natural Language)                  │  │
-│  │  • Tone/Pacing/Depth Adjustment                              │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                              │                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🤖 MODEL LAYER (Pluggable Intelligence)                    │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • Proprietary Models (GPT-5, Claude 4, Gemini Ultra)        │  │
-│  │  • Open Source Models (Llama 4, Mistral, DeepSeek)           │  │
-│  │  • Local Models (Ollama, LM Studio)                         │  │
-│  │  • Model Registry (100+ Models, Tuesday Updates)              │  │
-│  │  • User Model Preferences (Per Domain)                        │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                              │                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🎛️ INTERFACE LAYER (Accessibility for All)                  │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • Casual Mode (Presets, One-Click)                          │  │
-│  │  • Standard Mode (Full Features)                            │  │
-│  │  • Expert Mode (Raw Config, JSON)                            │  │
-│  │  • Architect Mode (Enterprise, API Access)                   │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                              │                                     │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  🔄 PORTABILITY ENGINE (Freedom to Leave)                    │  │
-│  │  ─────────────────────────────────────────────────────────   │  │
-│  │  • Export (JSON, GraphQL, RDF, JSON-LD)                     │  │
-│  │  • Import (From Any System)                                │  │
-│  │  • Migrate (To Any Model, Any Provider)                     │  │
-│  │  • Backup (Encrypted, User's Keys, Offline)                 │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+
+### Docker
+```bash
+docker-compose up -d
 ```
 
 ---
 
-## The Unique Experience Engine
+## Key Features
 
-### How Simplicity Creates a Unique Experience
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                 UNIQUE EXPERIENCE GENERATION                         │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  👤 USER INPUT                                                      │
-│  └── Query + Context + Preferences                                   │
-│                                                                     │
-│  ↓                                                                  │
-│                                                                     │
-│  🔐 CRYPTOGRAPHIC VERIFICATION                                     │
-│  ├── GPG Signature (Verify User Identity)                          │
-│  ├── Consent Check (Data Usage Permission)                          │
-│  └── Zero-Knowledge Auth (Privacy-Preserving)                       │
-│                                                                     │
-│  ↓                                                                  │
-│                                                                     │
-│  🧠 BUILD UNIQUE INTELLIGENCE                                      │
-│  ├── Load User Knowledge Graph (Personal Context)                    │
-│  ├── Correlate User ↔ Model (Create Unified State)                  │
-│  └── Generate Unique Hash (Immutable Experience ID)                 │
-│      ┌──────────────────────────────────────────────┐              │
-│      │  NOBODY ELSE IN THE WORLD GETS THIS EXACT    │              │
-│      │  RESPONSE BECAUSE YOUR KNOWLEDGE + YOUR      │              │
-│      │  PREFERENCES + YOUR PATTERNS = UNIQUE        │              │
-│      └──────────────────────────────────────────────┘              │
-│                                                                     │
-│  ↓                                                                  │
-│                                                                     │
-│  🧠 GAN-RAG ENGINE                                                 │
-│  ├── Retrieve Knowledge (Hybrid + Personal)                         │
-│  ├── Generate Candidates (Multiple Models)                          │
-│  ├── Discriminate (Accuracy/Relevance/Personal)                     │
-│  └── Score & Rank (Best Response)                                   │
-│                                                                     │
-│  ↓                                                                  │
-│                                                                     │
-│  🎭 PERSONIFICATION                                                │
-│  ├── Inject Emotion (Based on Correlation)                          │
-│  ├── Adjust Tone (User's Preference)                               │
-│  └── Format Response (User's Style)                                │
-│                                                                     │
-│  ↓                                                                  │
-│                                                                     │
-│  📤 UNIQUE OUTPUT                                                  │
-│  ├── Unique Response (Nobody Else Gets This)                        │
-│  ├── Citations (With Confidence Scores)                             │
-│  ├── Emotional Tone (Natural, Personal)                            │
-│  └── GPG-Signed Response (Authenticity Guaranteed)                  │
-│                                                                     │
-│  ↓                                                                  │
-│                                                                     │
-│  📈 CONTINUOUS LEARNING                                             │
-│  ├── Collect Feedback (Implicit + Explicit)                         │
-│  ├── Update Knowledge Graph (User's Intelligence Grows)             │
-│  └── Evolve Model (Weekly Improvements)                             │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Cryptographic Sovereignty
-
-### GPG Key Management
+### 🧠 User Knowledge Graph
+Your knowledge, preferences, and patterns - **owned by you**.
 
 ```java
-// User's GPG Key Ring (User Controls Everything)
-UserSovereigntyEngine {
-    
-    // Master Key - Root of Trust
-    MasterGPGKey masterKey;
-    
-    // Sub-Keys for Different Purposes
-    List<GPGSubKey> subKeys = {
-        encryptionKey,    // Encrypt user data
-        signingKey,       // Sign everything
-        authenticationKey // Authenticate
-    };
-    
-    // Certificate Management
-    CertificateManager certManager;
-    
-    // Zero-Knowledge Verification
-    ZeroKnowledgeProof zkp;
+// Simplicity learns your context
+UserKnowledgeGraph kg = new UserKnowledgeGraph();
+kg.recordInterest(userId, "quantum computing");
+kg.addFeature(userId, Feature.domain("physics"));
+kg.addFeature(userId, Feature.role("researcher"));
+```
+
+### 🔗 Correlation Engine
+Creates a **unique experience** no one else can replicate.
+
+```
+User Knowledge ──┬──▶ Correlation ──▶ Unique Experience Hash
+Model Capability─┘                   (Nobody else has this)
+```
+
+### 🧠 GAN-RAG Coupling
+Self-improving intelligence that gets smarter with every query.
+
+```java
+// Generator creates candidates
+List<GeneratedResponse> candidates = generator.create(request, context);
+
+// Discriminator scores them
+ScoredResponse best = discriminator.rank(candidates, criteria);
+
+// Learning updates the system
+learning.record(feedback);
+```
+
+### 🎭 Personification
+AI that feels human - curious, empathetic, humble.
+
+```java
+// Configure personality
+sentience.setPersonaPreset(userId, PersonaPreset.COMPASSIONATE);
+
+// Generate emotional response
+EmotionalResponse response = sentience.generateEmotionalResponse(context, userId);
+String answer = sentience.injectEmotion(baseAnswer, response, persona);
+```
+
+### 🔐 Cryptographic Sovereignty
+Your keys. Your data. Your control.
+
+```java
+// Export your knowledge graph
+ExportedPackage pkg = sovereignty.exportUserData(userId, ExportFormat.JSON, EncryptionLevel.STRONG);
+
+// Migrate to any system
+sovereignty.migrateToNewModel(userId, "openai");
+```
+
+### 🤖 100+ AI Models
+Choose your models. Change anytime. Keep your intelligence.
+
+```bash
+# Set preferred model per domain
+POST /api/v1/models/preference
+{
+  "domain": "coding",
+  "model": "claude-3-opus",
+  "provider": "anthropic"
 }
 ```
 
-### Consent Ledger (Immutable)
+---
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    CONSENT LEDGER (Immutable)                        │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌─────────────┬─────────────┬─────────────┬─────────────────────┐  │
-│  │ Timestamp   │ ConsentType │   Status    │   Action            │  │
-│  ├─────────────┼─────────────┼─────────────┼─────────────────────┤  │
-│  │ 2024-01-15 │ PERSONALIZE │   GRANTED   │ Enable learning     │  │
-│  │ 2024-02-20 │ ANALYTICS  │   GRANTED   │ Enable aggregation  │  │
-│  │ 2024-03-01 │ MODEL_TRAIN│   DENIED    │ Reject training use  │  │
-│  │ 2024-03-10 │ SHARING    │   REVOKED   │ Revoked by user     │  │
-│  └─────────────┴─────────────┴─────────────┴─────────────────────┘  │
-│                                                                     │
-│  📜 Each entry is GPG-signed and timestamped                       │
-│  🔒 Changes are permanent and traceable                            │
-│  🚫 Instant revocation = immediate data deletion                    │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           SIMPLICITY STACK                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  Interface Layer (Casual → Standard → Expert → Architect)        │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                    │                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  Personification Engine (Emotional AI + Personality)              │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                    │                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  Correlation Engine (User ↔ Model = Unique Experience)           │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                    │                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  GAN-RAG Coupling (Generator + Discriminator + Learning)        │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                    │                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  User Knowledge Graph (Owned by User)                           │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                    │                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  Simplicity RAG (Lucene: Vector + BM25 + Personalization)       │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                    │                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  Model Registry (100+ Models, Tuesday Updates)                  │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                    │                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  Sovereignty Engine (GPG + Consent + Portability)               │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
-
-### Encryption Layers
-
-| Layer | Algorithm | Key Owner | Purpose |
-|-------|-----------|-----------|---------|
-| At Rest | AES-256-GCM | User | Protect stored data |
-| In Transit | TLS 1.3+ | Mutual | Secure communication |
-| Compute | Homomorphic | User | Compute on encrypted |
-| Zero-Knowledge | ZK-SNARKs | User | Prove without revealing |
 
 ---
 
-## Portability: Freedom to Leave
+## Modules
 
-### Export Formats
+| Module | Description | Status |
+|--------|-------------|--------|
+| `simplicity-core` | Domain models and types | ✅ Ready |
+| `simplicity-rag` | Lucene-based RAG engine | ✅ Ready |
+| `simplicity-knowledge-graph` | User knowledge graph | ✅ Ready |
+| `simplicity-model-registry` | Model management | ✅ Ready |
+| `simplicity-intelligence` | GAN-RAG + Personification | ✅ Ready |
+| `simplicity-sovereignty` | GPG + Portability | ✅ Ready |
+| `simplicity-api` | REST API | ✅ Ready |
 
-```json
+---
+
+## Intent Commands
+
+Control AI behavior with `/commands`:
+
+| Command | Description |
+|---------|-------------|
+| `/research` | Deep research with citations |
+| `/code` | Write or debug code |
+| `/explain` | Simple explanations |
+| `/compare` | Compare options |
+| `/summarize` | Brief summaries |
+| `/brainstorm` | Creative ideas |
+
+```bash
+curl -X POST http://localhost:8080/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "quantum computing",
+    "customization": {
+      "intentCommand": "/research"
+    }
+  }'
+```
+
+---
+
+## API Reference
+
+### Query
+```bash
+POST /api/v1/query
 {
-  "version": "1.0",
-  "exportedAt": "2024-03-15T10:30:00Z",
-  "format": "simplicity-portable",
-  "checksum": "sha256:abc123...",
-  
-  "userKnowledgeGraph": {
-    "entities": [...],
-    "relationships": [...],
-    "interestVector": {...},
-    "behaviorPatterns": [...]
-  },
-  
-  "preferences": {
-    "personality": {...},
-    "emotions": {...},
-    "interface": {...}
-  },
-  
-  "learningHistory": {
-    "interactions": [...],
-    "feedback": [...]
-  },
-  
-  "cryptographic": {
-    "signature": "-----BEGIN PGP SIGNATURE-----",
-    "publicKey": "-----BEGIN PGP PUBLIC KEY BLOCK-----"
+  "query": "What is machine learning?",
+  "userId": "user-123",
+  "customization": {
+    "responseType": "MARKDOWN",
+    "length": "MEDIUM"
   }
 }
 ```
 
-### Migration Paths
-
+### Ingest Documents
+```bash
+POST /api/v1/ingest
+{
+  "documents": [
+    {
+      "title": "ML Guide",
+      "content": "Machine learning is...",
+      "tags": ["ai", "ml"]
+    }
+  ]
+}
 ```
-Simplicity KG ──┬──► OpenAI Ecosystem
-                ├──► Anthropic (Claude)
-                ├──► Google AI
-                ├──► Any Local Model
-                ├──► Custom Deployment
-                └──► Future AI Systems
+
+### Export Knowledge Graph
+```bash
+POST /api/v1/sovereignty/export
+{
+  "format": "JSON",
+  "encryption": "STANDARD"
+}
 ```
 
 ---
 
-## Comparison: Why We're a Decade Ahead
+## Configuration
 
-| Capability | Perplexity | OpenAI | Google | Simplicity |
-|------------|------------|--------|--------|------------|
-| **User Knowledge Graph** | ❌ | ❌ | ❌ | ✅ Core |
-| **User Owns Intelligence** | ❌ | ❌ | ❌ | ✅ Native |
-| **Portable Data** | ❌ | ❌ | ❌ | ✅ Full |
-| **GPG Key Control** | ❌ | ❌ | ❌ | ✅ Native |
-| **GAN-RAG Coupling** | ❌ | ❌ | ❌ | ✅ Self-Evolving |
-| **Unique Experience** | ❌ | ❌ | ❌ | ✅ Immutable |
-| **Zero-Knowledge** | ❌ | ❌ | ❌ | ✅ Built-in |
-| **Consent Ledger** | ❌ | ❌ | ❌ | ✅ Immutable |
-| **Homomorphic Encryption** | ❌ | ❌ | ❌ | ✅ Optional |
-| **Federated Learning** | ❌ | ❌ | ❌ | ✅ Supported |
-| **Model Agnostic** | ❌ | ❌ | ❌ | ✅ 100+ Models |
-| **Weekly Model Refresh** | ❌ | ❌ | ❌ | ✅ Every Tuesday |
+### Environment Variables
+```bash
+export OPENAI_API_KEY=sk-...
+export ANTHROPIC_API_KEY=sk-ant-...
+export JAVA_OPTS="-Xmx8g"
+```
+
+### config.yaml
+```yaml
+server:
+  port: 8080
+
+search:
+  hybrid_weights:
+    vector: 0.6
+    keyword: 0.4
+
+models:
+  default: gpt-4
+  providers:
+    openai:
+      api_key: ${OPENAI_API_KEY}
+
+sovereignty:
+  encryption: true
+```
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [QUICKSTART.md](docs/QUICKSTART.md) | Installation and usage guide |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture deep-dive |
+| [API.md](docs/API.md) | API reference |
 
 ---
 
 ## The Simplicity Difference
 
 ### Traditional AI Systems
-
 ```
 ❌ Your intelligence is TRAPPED in their model
 ❌ They OWN your learning
@@ -319,7 +306,6 @@ Simplicity KG ──┬──► OpenAI Ecosystem
 ```
 
 ### Simplicity
-
 ```
 ✅ YOUR intelligence belongs to YOU
 ✅ YOU own your knowledge graph
@@ -335,54 +321,37 @@ Simplicity KG ──┬──► OpenAI Ecosystem
 
 ---
 
-## Module Structure
+## Contributing
 
-```
-simplicity/
-├── simplicity-core/              # Core types, domain models
-├── simplicity-rag/               # Lucene-based RAG engine
-├── simplicity-knowledge-graph/   # User knowledge graph
-├── simplicity-model-registry/    # Model registry with versioning
-├── simplicity-intelligence/      # GAN-RAG, correlation, personification
-│   ├── IntelligenceCore.java     # Main intelligence engine
-│   ├── PersonificationEngine.java # Unique experience creation
-│   ├── SentienceEngine.java      # Emotional intelligence
-│   └── InterfaceLayer.java        # Dual interface (casual↔expert)
-├── simplicity-sovereignty/       # GPG, crypto, portability
-└── simplicity-api/              # REST/gRPC API
-```
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing`)
+5. Open a Pull Request
 
 ---
 
-## Quick Start
+## Roadmap
 
-```bash
-# Clone the repository
-git clone https://github.com/your-org/simplicity.git
-cd simplicity
-
-# Build all modules
-./mvnw clean install
-
-# Run the server
-java -jar simplicity-api/target/simplicity-api.jar
-
-# Access the API
-curl http://localhost:8080/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "Explain quantum computing",
-    "userId": "your-user-id"
-  }'
-```
+- [x] Core architecture
+- [x] RAG engine
+- [x] Knowledge graph
+- [x] GAN-RAG coupling
+- [x] Personification
+- [x] Sovereignty engine
+- [x] GPG key management
+- [ ] Federated learning
+- [ ] Multi-modal support
+- [ ] Enterprise deployment
 
 ---
 
 ## License
 
-MIT License - Because your intelligence should be free.
+MIT License - See [LICENSE](LICENSE)
 
 ---
 
 **Built with the vision that AI should serve humanity, not control it.**
+
 **Your data. Your keys. Your intelligence. Your sovereignty.**

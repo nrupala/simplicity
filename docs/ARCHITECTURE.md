@@ -1,351 +1,492 @@
-# Simplicity - Architecture & Design
+# Simplicity Architecture Guide
 
 ## Overview
 
-Simplicity is an AI answer engine that combines retrieval-augmented generation (RAG) with personal knowledge graphs to deliver highly personalized, verifiable answers.
+Simplicity is a **next-generation AI answer engine** with user-owned intelligence. This guide explains the architecture and how the pieces connect.
 
-## Core Principles
-
-1. **Personalization by Default** - Every user has a knowledge graph that shapes their search results
-2. **Built on Lucene** - We don't rely on external search engines; we build on Apache Lucene
-3. **Knowledge Graph Native** - Entities and relationships, not just documents
-4. **Continuous Learning** - The system learns from user behavior to improve results
-5. **Verifiable Answers** - Every answer comes with citations and confidence scores
+---
 
 ## System Architecture
 
-### Layer 1: User Knowledge Graph
-
-The foundation of personalization is the **User Knowledge Graph (UKG)**:
+### High-Level Flow
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                    User Knowledge Graph                       │
-├──────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌─────────┐     ┌──────────┐     ┌─────────────────────┐   │
-│  │Identity │────▶│ Features │────▶│ Interests           │   │
-│  │         │     │          │     │                     │   │
-│  │• Name   │     │• Role    │     │• Topics              │   │
-│  │• Email  │     │• Team    │     │• Keywords            │   │
-│  │• Org    │     │• Domain  │     │• Preferences         │   │
-│  │• Perms  │     │• Level   │     │• History             │   │
-│  └─────────┘     └──────────┘     └─────────────────────┘   │
-│       │                                    │                 │
-│       │                                    ▼                 │
-│       │              ┌───────────────────────────────────┐   │
-│       │              │     Organizational Context        │   │
-│       │              │                                    │   │
-│       │              │  • Team structures & hierarchies   │   │
-│       │              │  • Domain expertise mapping        │   │
-│       │              │  • Trust relationships            │   │
-│       │              │  • Access permissions             │   │
-│       │              └───────────────────────────────────┘   │
-│       │                                                     │
-│       ▼                                                     │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │              Behavioral Signals                          │ │
-│  │  • Search patterns      • Click-through rates           │ │
-│  │  • Query refinements   • Time-on-content               │ │
-│  │  • Feedback signals    • Session context               │ │
-│  └─────────────────────────────────────────────────────────┘ │
-│                                                               │
-└──────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              USER INPUT                                  │
+│                    (Query + Context + Preferences)                       │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    CRYPTOGRAPHIC VERIFICATION                            │
+│              (GPG Signature → Consent Check → Auth)                     │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    USER KNOWLEDGE GRAPH                                 │
+│         (Entities + Relationships + Preferences + Patterns)              │
+│                    🔐 OWNED BY USER 🔐                                  │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    CORRELATION ENGINE                                    │
+│            (User Knowledge ↔ Model Capability)                          │
+│                 Creates: Unique Experience Hash                          │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        GAN-RAG ENGINE                                   │
+│                                                                          │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│  │   RAG       │───▶│  GENERATOR   │───▶│ DISCRIMINATOR│             │
+│  │  Retrieval   │    │  (Multiple)   │    │  (Scoring)   │             │
+│  │  + Personal │    │              │    │              │             │
+│  └──────────────┘    └──────────────┘    └──────────────┘             │
+│                                                                          │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │                    CONTINUOUS LEARNING                             │  │
+│  │         (Feedback → Update KG → Evolve Model)                     │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    PERSONIFICATION ENGINE                                │
+│              (Emotional Tone + Personality + Style)                     │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          OUTPUT                                         │
+│         Unique Response + Citations + Emotions + Signature               │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Layer 2: Simplicity RAG Engine
+---
 
-Built on Apache Lucene, our RAG engine differs from standard implementations:
+## Module Breakdown
+
+### 1. Simplicity Core (`simplicity-core`)
+
+**Purpose:** Shared domain models and types
+
+```
+simplicity-core/
+├── domain/
+│   ├── DomainModels.java      # User, Feature, Interest, Document
+│   ├── QueryModels.java      # QueryRequest, QueryResponse, SearchResult
+│   └── UserCustomization.java # Intent commands, Response config
+└── service/
+    └── UserCustomizationService.java
+```
+
+**Key Types:**
+- `User` - Identity with preferences
+- `Feature` - User attributes (role, team, domain)
+- `Interest` - Topics user cares about
+- `QueryRequest` - Query with customization
+- `QueryResponse` - Answer with citations
+
+---
+
+### 2. Simplicity RAG (`simplicity-rag`)
+
+**Purpose:** Lucene-based retrieval engine
+
+```
+simplicity-rag/
+└── SimplicitySearchEngine.java
+```
+
+**Features:**
+- Hybrid search (Vector + BM25)
+- Personalized reranking
+- Citation mapping
+- Knowledge grounding
+
+**Flow:**
+```
+Query → Analyzer → Boolean Query → Search → Score → Rerank → Results
+                                    ↑
+                        User Knowledge Graph (boost)
+```
+
+---
+
+### 3. Simplicity Knowledge Graph (`simplicity-knowledge-graph`)
+
+**Purpose:** User-owned knowledge graph
+
+```
+simplicity-knowledge-graph/
+└── UserKnowledgeGraph.java
+```
+
+**Components:**
+- User profiles with features
+- Interest tracking
+- Behavioral signals
+- Organizational context
+
+**Data Flow:**
+```
+User Action → Record Interest → Update Features → Learn Patterns → Personalized Results
+```
+
+---
+
+### 4. Simplicity Model Registry (`simplicity-model-registry`)
+
+**Purpose:** Manage 100+ AI models
+
+```
+simplicity-model-registry/
+└── ModelRegistry.java
+```
+
+**Model Types:**
+| Tier | Providers | Examples |
+|------|-----------|----------|
+| Premium | OpenAI, Anthropic, Google | GPT-5, Claude 4, Gemini Ultra |
+| Open | Meta, Mistral, DeepSeek | Llama 4, Mistral Nemo, DeepSeek V4 |
+| Local | Ollama, LM Studio | Local LLMs |
+
+**Updates:** Every Tuesday
+
+---
+
+### 5. Simplicity Intelligence (`simplicity-intelligence`)
+
+**Purpose:** The brain - GAN-RAG + Personification
+
+```
+simplicity-intelligence/
+├── IntelligenceCore.java       # Main orchestration
+├── PersonificationEngine.java # Unique experience
+├── SentienceEngine.java      # Emotional intelligence
+└── InterfaceLayer.java       # UI configuration
+```
+
+#### Intelligence Core Flow
+
+```
+Query → Intent Analysis → Correlation → RAG Retrieval
+       → Generate Candidates → Discriminate → Select
+       → Personify → Response
+```
+
+#### GAN-RAG Coupling
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Simplicity RAG Engine                     │
+│                      GAN-RAG LAYER                          │
 ├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  Query ──▶ ┌─────────────┐ ──▶ Context ──▶ ┌─────────────┐  │
-│            │   Hybrid    │                  │  Knowledge   │  │
-│            │   Search    │                  │   Grounder  │  │
-│            │             │                  │             │  │
-│            │ ┌─────────┐ │                  │ • Fact bind  │  │
-│            │ │BM25     │ │                  │ • Citation  │  │
-│            │ │(Keyword)│ │                  │ • Verify     │  │
-│            │ └─────────┘ │                  └─────────────┘  │
-│            │             │                        │          │
-│            │ ┌─────────┐ │                        ▼          │
-│            │ │Neural   │ │                  ┌─────────────┐   │
-│            │ │Vector   │ │                  │   Model     │   │
-│            │ │Search   │ │                  │  Generator  │   │
-│            │ └─────────┘ │                  └─────────────┘   │
-│            └─────────────┘                        │          │
-│                    │                              ▼          │
-│                    ▼                    ┌─────────────────┐  │
-│            ┌─────────────┐               │   Cited Answer  │  │
-│            │   Neural    │               │                 │  │
-│            │  Reranker  │               │ [1] Source...   │  │
-│            │            │               │ [2] Source...   │  │
-│            │ • Learning │               └─────────────────┘  │
-│            │ • Signals  │                                  │
-│            │ • Personal │                                  │
-│            └─────────────┘                                  │
-│                                                               │
+│                                                              │
+│   RETRIEVAL ─────┬──────▶ GENERATORS                        │
+│   (Hybrid +     │        ├── Primary                       │
+│    Personal)     │        ├── Alternative                   │
+│                 │        ├── Concise                       │
+│                 │        └── Detailed                      │
+│                 │               │                           │
+│                 │               ▼                           │
+│                 │        DISCRIMINATORS                   │
+│                 │        ├── Accuracy                      │
+│                 │        ├── Relevance                     │
+│                 │        ├── Personal                     │
+│                 │        └── Quality                      │
+│                 │               │                           │
+│                 └──────────────┴──▶ SCORE + RANK          │
+│                                                              │
+│   LEARNING ◀──────────────────────────────────────────────  │
+│   (Implicit + Explicit Feedback)                            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Layer 3: Intelligence Orchestration
-
-The orchestration layer connects user context to the RAG engine:
+#### Personification Engine
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│              Intelligence Orchestration Layer               │
+│                   PERSONIFICATION                            │
 ├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌────────────┐    ┌────────────┐    ┌────────────────────┐ │
-│  │   Query    │    │    User    │    │   Model            │ │
-│  │   Intent   │───▶│   Context  │───▶│   Router           │ │
-│  │   Parser   │    │   Builder  │    │   (PPO-RL)         │ │
-│  │            │    │            │    │                    │ │
-│  │ • Type     │    │ • KG       │    │ • Task match       │ │
-│  │ • Entity   │    │   extract  │    │ • Latency target    │ │
-│  │ • Scope    │    │ • History  │    │ • Cost budget       │ │
-│  │ • Depth    │    │ • Signals  │    │ • Quality need      │ │
-│  └────────────┘    └────────────┘    └────────────────────┘ │
-│         │                  │                   │            │
-│         ▼                  ▼                   ▼            │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │                  Personalization Engine                  │ │
-│  │                                                          │ │
-│  │  Combines user graph + query context + behavioral       │ │
-│  │  signals to create a personalized search profile         │ │
-│  │                                                          │ │
-│  │  Output: { query, context, boost_weights, filters }     │ │
-│  └─────────────────────────────────────────────────────────┘ │
-│                            │                                │
-│                            ▼                                │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │                    Response Synthesizer                  │ │
-│  │                                                          │ │
-│  │  • Merge RAG results with user context                   │ │
-│  │  • Apply personalization weights                          │ │
-│  │  • Generate answer with citations                         │ │
-│  │  • Log interaction for learning                           │ │
-│  └─────────────────────────────────────────────────────────┘ │
-│                                                               │
+│                                                              │
+│   User KG ──┬──▶ CORRELATION ENGINE                        │
+│             │       ├── Topic Match                         │
+│             │       ├── Complexity Match                    │
+│             │       └── Style Match                        │
+│             │               │                              │
+│             │               ▼                              │
+│             │       WEIGHT CALCULATION                    │
+│             │       ├── User Weight (expertise)           │
+│             │       └── Model Weight (capability)         │
+│             │               │                              │
+│             │               ▼                              │
+│             │       UNIQUE APPROACH                       │
+│             │       ├── USER_GUIDED                       │
+│             │       ├── COLLABORATIVE                     │
+│             │       ├── EDUCATIONAL                       │
+│             │       └── MODEL_AUTHORITATIVE              │
+│             │               │                              │
+│             └───────────────┴──────▶ PERSONIFIED OUTPUT     │
+│                                              │              │
+│   Personality Profile ───────────────────────┤              │
+│   Emotional Engine ───────────────────────────┤              │
+│   Expression Generator ───────────────────────┴──▶ Response  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Data Models
+---
 
-### User Knowledge Graph (Neo4j-friendly schema)
+### 6. Simplicity Sovereignty (`simplicity-sovereignty`)
 
-```java
-// Core entities
-User {
-    id: UUID
-    email: String
-    name: String
-    organizationId: UUID
-    createdAt: Timestamp
-    lastActiveAt: Timestamp
-}
-
-Feature {
-    id: UUID
-    userId: UUID → User
-    type: FeatureType (ROLE, TEAM, DOMAIN, LEVEL, SKILL)
-    value: String
-    confidence: Double (0-1)
-    source: SourceType (EXPLICIT, INFERRED, DERIVED)
-}
-
-Interest {
-    id: UUID
-    userId: UUID → User
-    topic: String
-    keywords: List<String>
-    strength: Double (0-1)
-    recency: Timestamp
-    interactions: Integer
-}
-
-Domain {
-    id: UUID
-    name: String
-    description: String
-    parentDomainId: UUID → Domain (hierarchical)
-    experts: List<UUID> → User
-}
-
-Organization {
-    id: UUID
-    name: String
-    structure: JSON (team hierarchy)
-    domains: List<UUID> → Domain
-}
-```
-
-### Knowledge Relationships
+**Purpose:** User-owned data and portability
 
 ```
-(User) ─[HAS_FEATURE]──▶ (Feature)
-(User) ─[INTERESTED_IN]──▶ (Interest)
-(User) ─[BELONGS_TO]──▶ (Team)
-(User) ─[WORKS_IN]──▶ (Domain)
-(User) ─[TRUSTS]──▶ (User)  // expertise endorsement
-(Feature) ─[PART_OF]──▶ (Domain)
-(Interest) ─[RELATED_TO]──▶ (Interest)
-(Domain) ─[CONTAINS]──▶ (SubDomain)
+simplicity-sovereignty/
+└── UserSovereigntyEngine.java
 ```
 
-## API Design
+**Features:**
+- GPG key management
+- Consent ledger
+- Data export (JSON, GraphQL, RDF)
+- Data import from any system
+- Model portability
 
-### Core Endpoints
-
+**Sovereignty Principles:**
 ```
-POST /api/v1/query
-  Request: { query, userId, options }
-  Response: { answer, citations, confidence, suggestions }
-
-POST /api/v1/ingest
-  Request: { documents[], source, metadata }
-  Response: { jobId, status }
-
-GET /api/v1/user/{userId}/graph
-  Response: { identity, features, interests, context }
-
-PUT /api/v1/user/{userId}/feedback
-  Request: { queryId, helpful, corrections[], signals }
-  Response: { status }
-```
-
-### Streaming
-
-```
-POST /api/v1/stream/query
-  Server-Sent Events for real-time answer generation
-```
-
-## Personalization Flow
-
-```
-1. User submits query
-         │
-         ▼
-2. Extract user from request
-         │
-         ▼
-3. Load User Knowledge Graph
-   • Identity features
-   • Interest vector
-   • Recent interactions
-   • Team/Domain context
-         │
-         ▼
-4. Build personalization profile
-   • Boost relevant documents
-   • Filter by permissions
-   • Adjust confidence thresholds
-         │
-         ▼
-5. Execute RAG with profile
-   • Lucene search with boosts
-   • Rerank with personalization signals
-   • Ground with user context
-         │
-         ▼
-6. Generate answer
-         │
-         ▼
-7. Log interaction
-   • Store for learning
-   • Update behavioral signals
-   • Refine user model
-         │
-         ▼
-8. Return personalized answer
+┌─────────────────────────────────────────────────────────────┐
+│                    USER SOVEREIGNTY                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐     │
+│   │  OWNERSHIP │   │   CONTROL   │   │ PORTABILITY │     │
+│   │    🔐      │   │     🎛️     │   │     🔄      │     │
+│   │ User owns  │   │  User decides │  │  User can  │     │
+│   │ their data │   │  what to share│  │  take data  │     │
+│   └─────────────┘   └─────────────┘   └─────────────┘     │
+│                                                              │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐     │
+│   │   CONSENT  │   │ TRANSPARENCY│   │   ZERO      │     │
+│   │     ⚖️     │   │     🔍      │   │  KNOWLEDGE  │     │
+│   │ Explicit   │   │  Full audit │   │     🔒      │     │
+│   │  consent   │   │    logs     │   │   Privacy   │     │
+│   │  required  │   │            │   │ preserved   │     │
+│   └─────────────┘   └─────────────┘   └─────────────┘     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Search Engine (Lucene)
+---
 
-### Index Structure
+### 7. Simplicity API (`simplicity-api`)
 
-```
-simplicity-index/
-├── documents/
-│   ├── _0.cfe
-│   ├── _0.cfs
-│   └── segments_N
-├── embeddings/
-│   ├── vectors.slm
-│   └── index.mdb
-├── kg_entities/
-│   └── entities.slm
-└── user_signals/
-    └── signals.mdb
-```
-
-### Custom Analyzers
-
-1. **OrgAwareAnalyzer**: Respects organizational boundaries
-2. **PersonalizedAnalyzer**: Incorporates user interest boosting
-3. **DomainAnalyzer**: Optimized for technical/domain-specific terms
-
-## Learning System
-
-### Feedback Loop
+**Purpose:** REST API layer
 
 ```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Explicit   │    │   Implicit   │    │   Derived    │
-│   Feedback   │    │   Signals    │    │   Features   │
-├──────────────┤    ├──────────────┤    ├──────────────┤
-│ 👍/👎        │    │ Click rate   │    │ Topic affinity│
-│ Corrections │    │ Time-on-doc   │    │ Depth prefer  │
-│ Saves       │    │ Scroll %     │    │ Style match   │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                    │                    │
-       └────────────────────┴────────────────────┘
-                           │
-                           ▼
-                  ┌──────────────────┐
-                  │  Learning Engine │
-                  │                  │
-                  │ • Weight updates │
-                  │ • Interest decay │
-                  │ • Anomaly detect │
-                  └────────┬─────────┘
-                           │
-                           ▼
-                  ┌──────────────────┐
-                  │  User Knowledge  │
-                  │     Graph        │
-                  │                  │
-                  │ Updated profiles  │
-                  │ New interests    │
-                  │ Refined features │
-                  └──────────────────┘
+simplicity-api/
+├── Main.java                  # Entry point
+└── SimplicityServer.java     # HTTP handlers
 ```
 
-## Comparison with Perplexity
+**Endpoints:**
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/query` | Query with personalization |
+| POST | `/api/v1/ingest` | Ingest documents |
+| GET | `/api/v1/user/{id}/graph` | Get user KG |
+| PUT | `/api/v1/user/{id}/feedback` | Submit feedback |
+| POST | `/api/v1/sovereignty/export` | Export user data |
+| POST | `/api/v1/sovereignty/import` | Import user data |
 
-| Aspect | Perplexity | Simplicity |
-|--------|------------|------------|
-| Search Backend | Vespa.ai | Lucene (built from scratch) |
-| Knowledge Model | Flat documents | Knowledge graph |
-| User Context | None | Full UKG |
-| Personalization | None | Core feature |
-| Learning | Implicit (clicks) | Full behavioral modeling |
-| Scope | Global web | Organizational first |
-| Citations | Source-level | Claim-level |
+---
 
-## Getting Started
+## Data Flow Examples
 
-See [README.md](README.md) for quick start instructions.
+### Example 1: Simple Query
 
-## Future Vision
+```
+User: "What is quantum computing?"
 
-- [ ] Federated learning across organizations
-- [ ] Real-time collaborative search
-- [ ] Multi-modal knowledge graphs
-- [ ] Explainable personalization
-- [ ] Privacy-preserving ML
+Flow:
+1. GPG verify user identity
+2. Load user knowledge graph
+3. Detect query type = FACTUAL
+4. Check user expertise = general
+5. RAG retrieve documents
+6. Generate response
+7. Add emotional tone
+8. Apply personalization
+9. Return with citations
+```
+
+### Example 2: Research Query
+
+```
+User: "/research impact of AI on healthcare"
+
+Flow:
+1. Parse intent command = /research
+2. Set deep research mode
+3. Load user's domain knowledge (healthcare)
+4. RAG retrieve comprehensive sources
+5. Generate multiple candidates
+6. Discriminate for accuracy
+7. Create detailed report
+8. Add citations
+9. Suggest follow-ups
+```
+
+### Example 3: Personalization Learning
+
+```
+User clicks on result about "machine learning"
+User spends 45 seconds reading
+User provides positive feedback
+
+Flow:
+1. Record interaction
+2. Update interest vector (+ml)
+3. Boost ml-related features
+4. Learn user expertise level
+5. Adjust future results
+6. Update behavior patterns
+```
+
+---
+
+## Configuration
+
+### config.yaml Structure
+
+```yaml
+# Server Configuration
+server:
+  host: 0.0.0.0
+  port: 8080
+
+# Search Engine
+search:
+  index_path: ./data/index
+  max_results: 10
+  hybrid_weights:
+    vector: 0.6
+    keyword: 0.4
+
+# Model Configuration
+models:
+  default: gpt-4
+  providers:
+    openai:
+      api_key: ${OPENAI_API_KEY}
+    anthropic:
+      api_key: ${ANTHROPIC_API_KEY}
+    local:
+      endpoint: http://localhost:11434
+
+# Intelligence Settings
+intelligence:
+  gan_rag:
+    candidates: 3
+    discriminator_threshold: 0.7
+  personalization:
+    strength: 0.6
+
+# Sovereignty
+sovereignty:
+  encryption: true
+  consent_ledger: immutable
+  export_formats:
+    - json
+    - graphql
+    - rdf
+```
+
+---
+
+## Security Model
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      SECURITY LAYERS                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. IDENTITY                                                │
+│     └── GPG Key Pair (User-controlled)                       │
+│                                                              │
+│  2. AUTHENTICATION                                          │
+│     └── JWT + GPG Signature                                  │
+│                                                              │
+│  3. ENCRYPTION                                               │
+│     ├── At Rest: AES-256-GCM                                 │
+│     ├── In Transit: TLS 1.3+                                 │
+│     └── Zero-Knowledge: Optional                              │
+│                                                              │
+│  4. CONSENT                                                  │
+│     └── Immutable Ledger (User-controlled)                     │
+│                                                              │
+│  5. AUDIT                                                    │
+│     └── Full Access Log (Tamper-proof)                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Performance Targets
+
+| Metric | Target |
+|--------|--------|
+| Query Latency (p50) | < 500ms |
+| Query Latency (p99) | < 2s |
+| Throughput | 1000 req/min |
+| Index Size | 100M documents |
+| User KG Size | Unlimited |
+
+---
+
+## Monitoring
+
+**Health Endpoint:**
+```bash
+curl http://localhost:8080/health
+```
+
+**Metrics (Prometheus format):**
+```bash
+curl http://localhost:8080/metrics
+```
+
+**Key Metrics:**
+- `simplicity_queries_total`
+- `simplicity_query_duration_seconds`
+- `simplicity_kg_entities_total`
+- `simplicity_model_invocations_total`
+
+---
+
+## Deployment Options
+
+### 1. Development (Local)
+```bash
+mvn spring-boot:run
+```
+
+### 2. Docker
+```bash
+docker-compose up -d
+```
+
+### 3. Kubernetes
+```bash
+kubectl apply -f k8s/
+```
+
+### 4. Cloud (AWS/GCP/Azure)
+```bash
+terraform apply -f infra/
+```
+
+---
+
+**For detailed API docs:** See [QUICKSTART.md](QUICKSTART.md)
