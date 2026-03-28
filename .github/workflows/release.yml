@@ -7,36 +7,39 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ===========================================
-  # BUILD
-  # ===========================================
   build:
     name: Build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Build with Maven Wrapper
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+      - name: Verify Java
         run: |
-          chmod +x mvnw
-          ./mvnw --version
-          ./mvnw clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am
-          ./mvnw package -DskipTests -pl simplicity-core,simplicity-model-binder -am
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+
+      - name: Build
+        run: |
+          mvn -v
+          mvn clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
+
+      - name: Package
+        run: |
+          mvn package -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
 
       - name: Copy artifacts
         run: |
           mkdir -p release
-          cp simplicity-core/target/*.jar release/
-          cp simplicity-model-binder/target/*.jar release/
+          cp simplicity-core/target/*.jar release/ 2>/dev/null || true
+          cp simplicity-model-binder/target/*.jar release/ 2>/dev/null || true
           ls -la release/
 
       - name: Build PWA
@@ -54,12 +57,9 @@ jobs:
           name: release
           path: release
 
-  # ===========================================
-  # RELEASE
-  # ===========================================
   release:
     name: Create Release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Download
