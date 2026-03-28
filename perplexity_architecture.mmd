@@ -1,0 +1,386 @@
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#eaeaea', 'primaryBorderColor': '#4a9eff', 'lineColor': '#6a9eff', 'secondaryColor': '#16213e', 'tertiaryColor': '#0f3460'}}}%%
+flowchart TB
+    subgraph CLIENT["CLIENT LAYER"]
+        WEB["Web App"]
+        MOBILE["Mobile Apps"]
+        API_CLIENTS["API Clients"]
+        COPILOT["Copilot Mode"]
+    end
+
+    subgraph GATEWAY["API GATEWAY / LOAD BALANCER"]
+        LB["Load Balancer<br/>(Power-of-Two Random Choices)"]
+        AUTH["Authentication & Rate Limiting"]
+    end
+
+    subgraph INTELLIGENCE["INTELLIGENCE ORCHESTRATION LAYER"]
+        ROUTER["🧠 Model Router<br/>(PPO-RL Based)"]
+        CLASSIFIER["Intent Classifier<br/>(Query Complexity Analysis)"]
+        MODE_SELECT["Search Mode Selector<br/>(Standard/Pro/Deep/Computer)"]
+        
+        ROUTER --> CLASSIFIER
+        CLASSIFIER --> MODE_SELECT
+        MODE_SELECT --> ROUTER
+    end
+
+    subgraph QUERY["QUERY PROCESSING"]
+        QP["Query Intent Parser<br/>(Semantic Understanding)"]
+        QT["Query Type Detector<br/>(Factual/Comparison/How-to/Opinion)"]
+        QD["Query Decomposer<br/>(For Complex Queries)"]
+        QP --> QT
+        QT --> QD
+    end
+
+    subgraph RETRIEVAL["RETRIEVAL ENGINE (Vespa AI)"]
+        HYBRID["Hybrid Search Fusion"]
+        DENSE["Dense Retrieval<br/>(Vector/Embedding)"]
+        SPARSE["Sparse Retrieval<br/>(BM25/Keyword)"]
+        MERGE["Result Merge & Deduplication"]
+        
+        DENSE --> MERGE
+        SPARSE --> MERGE
+        MERGE --> HYBRID
+        
+        subgraph INDEX["Web Index Infrastructure"]
+            CRAWLER["Distributed Crawler<br/>(10K+ updates/sec)"]
+            CHUNK["Content Chunker<br/>(Fine-grained semantic units)"]
+            PARSER["AI Content Parser<br/>(Self-improving rulesets)"]
+            CRAWLER --> CHUNK
+            CHUNK --> PARSER
+        end
+        
+        HYBRID <--> INDEX
+    end
+
+    subgraph RERANK["RERANKING & SELECTION"]
+        RERANKER["ML Reranker Model"]
+        FILTER["Quality Filters"]
+        SELECT["Document Selector<br/>(50 → 5-10)"]
+        
+        RERANKER --> FILTER
+        FILTER --> SELECT
+    end
+
+    subgraph GENERATION["GENERATION ENGINE"]
+        CONTEXT["Context Assembler<br/>(Structured Prompt Builder)"]
+        GROUNDED["Grounded Generation<br/>(No facts beyond retrieved)"]
+        CITATION["Citation Mapper<br/>(Claim → Source Attribution)"]
+        FORMAT["Response Formatter"]
+        
+        CONTEXT --> GROUNDED
+        GROUNDED --> CITATION
+        CITATION --> FORMAT
+    end
+
+    subgraph MODELS["AI MODEL PORTFOLIO"]
+        subgraph PROPRIETARY["Proprietary Models"]
+            SONAR["Sonar Family<br/>(Web-grounded LLMs)"]
+            PPLX["PPLX 7B/70B/405B<br/>(Fine-tuned Llama)"]
+        end
+        
+        subgraph PARTNER["Partner Models"]
+            GPT["GPT-4o/5<br/>(OpenAI)"]
+            CLAUDE["Claude 3.5/4<br/>(Anthropic)"]
+            GEMINI["Gemini 2.0<br/>(Google)"]
+            GROK["Grok 3<br/>(xAI)"]
+            OTHER["+12+ Specialized Models"]
+        end
+    end
+
+    subgraph INFERENCE["INFERENCE INFRASTRUCTURE (ROSE Engine)"]
+        TRITON["NVIDIA Triton<br/>(Model Scheduler)"]
+        TENSORRT["TensorRT-LLM<br/>(GPU Optimization)"]
+        SPECULATIVE["Speculative Decoding<br/>(MTP)"]
+        PREFILL["Prefill GPUs"]
+        DECODE["Decode GPUs"]
+        
+        TRITON --> TENSORRT
+        TENSORRT --> SPECULATIVE
+        SPECULATIVE --> PREFILL
+        SPECULATIVE --> DECODE
+        
+        subgraph GPU["GPU Fleet"]
+            H100_4["HGX H100 4-GPU Pods"]
+            H100_8["HGX H100 8-GPU Pods"]
+        end
+        
+        PREFILL -.->|"Disaggregated<br>Serving"| H100_4
+        DECODE -.->|"Disaggregated<br>Serving"| H100_8
+    end
+
+    subgraph COMPUTER["PERPLEXITY COMPUTER (Agentic Layer)"]
+        AGENT["Multi-Model Agent<br/>(19 Models)"]
+        PLANNER["Sequential Planner"]
+        MCP["MCP Tools<br/>(100+ Integrations)"]
+        EXEC["Task Executor"]
+        
+        AGENT --> PLANNER
+        PLANNER --> MCP
+        PLANNER --> EXEC
+    end
+
+    subgraph STORAGE["DATA & STORAGE"]
+        KV_CACHE["KV Cache<br/>(Dynamic Scaling)"]
+        VECTOR_DB["Vector Database<br/>(Embeddings)"]
+        HOT["Hot Storage<br/>(400+ PB)"]
+        CACHE["Response Cache"]
+    end
+
+    subgraph FEEDBACK["CONTINUOUS LEARNING"]
+        SIGNALS["User Signal Collection"]
+        TRAIN["Model Fine-tuning<br/>(Continuous)"]
+        EVAL["A/B Testing Framework"]
+        
+        SIGNALS --> TRAIN
+        EVAL --> TRAIN
+    end
+
+    %% Connections
+    CLIENT --> LB
+    LB --> AUTH
+    AUTH --> QP
+    
+    QP --> RETRIEVAL
+    RETRIEVAL --> RERANK
+    RERANK --> GENERATION
+    
+    CLASSIFIER -->|"Route to<br>appropriate model"| ROUTER
+    ROUTER -->|"Select best model<br>for task"| MODELS
+    
+    MODELS -->|"Inference"| INFERENCE
+    INFERENCE -->|"Generated tokens"| GENERATION
+    
+    HYBRID -->|"200B+ URLs<br>Indexed"| STORAGE
+    INFERENCE -->|"Context"| KV_CACHE
+    GENERATION -->|"Cached responses"| CACHE
+    
+    MODE_SELECT -->|"Agentic<br>workflows"| COMPUTER
+    COMPUTER -->|"Parallel<br>execution"| RETRIEVAL
+    COMPUTER -->|"Agentic<br>generation"| MODELS
+    
+    WEB -->|"Click feedback<br>Engagement"| FEEDBACK
+    API_CLIENTS -->|"Usage signals"| FEEDBACK
+    
+    %% Styling
+    classDef client fill:#2d3436,stroke:#636e72,color:#dfe6e9
+    classDef gateway fill:#2d3436,stroke:#636e72,color:#dfe6e9
+    classDef intelligence fill:#4a1a6b,stroke:#9b59b6,color:#fff
+    classDef retrieval fill:#1a5276,stroke:#3498db,color:#fff
+    classDef rerank fill:#1e3a5f,stroke:#5dade2,color:#fff
+    classDef generation fill:#145a32,stroke:#27ae60,color:#fff
+    classDef models fill:#7d3c98,stroke:#a569bd,color:#fff
+    classDef inference fill:#b7950b,stroke:#f4d03f,color:#000
+    classDef computer fill:#922b21,stroke:#e74c3c,color:#fff
+    classDef storage fill:#1b2631,stroke:#95a5a6,color:#dfe6e9
+    classDef feedback fill:#1d8348,stroke:#58d68d,color:#fff
+    
+    class WEB,MOBILE,API_CLIENTS,COPILOT client
+    class LB,AUTH gateway
+    class ROUTER,CLASSIFIER,MODE_SELECT intelligence
+    class QP,QT,QD,HYBRID,DENSE,SPARSE,MERGE,CRAWLER,CHUNK,PARSER,INDEX retrieval
+    class RERANKER,FILTER,SELECT rerank
+    class CONTEXT,GROUNDED,CITATION,FORMAT generation
+    class SONAR,PPLX,PROPRIETARY,PARTNER,GPT,CLAUDE,GEMINI,GROK,OTHER models
+    class TRITON,TENSORRT,SPECULATIVE,PREFILL,DECODE,H100_4,H100_8,GPU inference
+    class AGENT,PLANNER,MCP,EXEC computer
+    class KV_CACHE,VECTOR_DB,HOT,CACHE storage
+    class SIGNALS,TRAIN,EVAL feedback
+```
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#eaeaea', 'primaryBorderColor': '#4a9eff', 'lineColor': '#6a9eff', 'secondaryColor': '#16213e', 'tertiaryColor': '#0f3460'}}}%%
+flowchart LR
+    subgraph INPUT["INPUT STAGE"]
+        Q["User Query"]
+    end
+    
+    subgraph PROCESS["PROCESSING PIPELINE"]
+        direction TB
+        1["1. Query Intent Parsing<br/>Semantic understanding beyond keywords"]
+        2["2. Query Classification<br/>Type, Recency, Domain, Depth"]
+        3["3. Hybrid Retrieval<br/>Vector(30) + Keyword(20) = 50 candidates"]
+        4["4. ML Reranking<br/>50 → 5-10 high-quality docs"]
+        5["5. Model Routing<br/>PPO-based dynamic selection"]
+        6["6. Context Assembly<br/>Structured prompt with citations"]
+        7["7. Grounded Generation<br/>Facts only from retrieved context"]
+        8["8. Citation Mapping<br/>Claim → Source attribution"]
+    end
+    
+    subgraph OUTPUT["OUTPUT STAGE"]
+        A["Cited Answer<br/>Inline citations with links"]
+        S["Sources<br/>Verifiable reference list"]
+    end
+    
+    Q --> 1 --> 2 --> 3 --> 4 --> 5 --> 6 --> 7 --> 8
+    
+    8 --> A
+    8 --> S
+    
+    classDef input fill:#2d3436,stroke:#00cec9,color:#fff
+    classDef process fill:#1a1a2e,stroke:#6a9eff,color:#fff
+    classDef output fill:#145a32,stroke:#00b894,color:#fff
+    
+    class Q input
+    class 1,2,3,4,5,6,7,8 process
+    class A,S output
+```
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#eaeaea', 'primaryBorderColor': '#4a9eff', 'lineColor': '#6a9eff', 'secondaryColor': '#16213e', 'tertiaryColor': '#0f3460'}}}%%
+flowchart TB
+    subgraph MODELS["MODEL SELECTION MATRIX"]
+        subgraph TIER1["Tier 1: Lightweight (< 10B params)"]
+            S7B["Sonar 7B / PPLX 7B"]
+            EMBED["Embedding Models"]
+        end
+        
+        subgraph TIER2["Tier 2: Mid-range (10-70B params)"]
+            S70B["Sonar 70B / PPLX 70B"]
+            GPT4["GPT-4o-mini"]
+            CLAUDE3["Claude 3.5 Sonnet"]
+        end
+        
+        subgraph TIER3["Tier 3: Frontier (70B+ params)"]
+            S405B["PPLX 405B"]
+            GPT5["GPT-4o / GPT-5"]
+            CLAUDE4["Claude 3.5/4 Opus"]
+            GEMINI["Gemini 2.0 Ultra"]
+        end
+        
+        subgraph SPECIALIZED["Specialized Models"]
+            CODE["Code Models"]
+            REASON["Reasoning Models"]
+            MULTI["Multimodal Models"]
+            REALTIME["Real-time Data"]
+        end
+    end
+    
+    subgraph DECISION["ROUTING DECISION TREE"]
+        Q["Query Received"]
+        TYPE{"Query Type?"}
+        COMPLEX{"Complexity?"}
+        LAT{"Latency<br/>Requirement?"}
+        COST{"Cost<br/>Budget?"}
+        
+        Q --> TYPE
+        TYPE -->|Factual| COMPLEX
+        TYPE -->|Code| REASON
+        TYPE -->|Research| LAT
+        TYPE -->|Creative| COST
+        
+        COMPLEX -->|Low| TIER1
+        COMPLEX -->|Medium| TIER2
+        COMPLEX -->|High| TIER3
+        
+        REASON -->|Reasoning| TIER3
+        LAT -->|Real-time| TIER2
+        LAT -->|Deep| TIER3
+        COST -->|Budget| TIER1
+        COST -->|Premium| TIER3
+    end
+    
+    classDef tier1 fill:#7d3c98,stroke:#a569bd,color:#fff
+    classDef tier2 fill:#1e8449,stroke:#27ae60,color:#fff
+    classDef tier3 fill:#c0392b,stroke:#e74c3c,color:#fff
+    classDef spec fill:#2980b9,stroke:#3498db,color:#fff
+    classDef decision fill:#1a1a2e,stroke:#6a9eff,color:#fff
+    
+    class S7B,EMBED tier1
+    class S70B,GPT4,CLAUDE3 tier2
+    class S405B,GPT5,CLAUDE4,GEMINI tier3
+    class CODE,REASON,MULTI,REALTIME spec
+    class Q,TYPE,COMPLEX,LAT,COST,DECISION decision
+```
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#eaeaea', 'primaryBorderColor': '#4a9eff', 'lineColor': '#6a9eff', 'secondaryColor': '#16213e', 'tertiaryColor': '#0f3460'}}}%%
+flowchart TB
+    subgraph INFRA["INFRASTRUCTURE ARCHITECTURE"]
+        subgraph CLOUD["Cloud Platform (AWS)"]
+            EKS["Amazon EKS<br/>(Kubernetes)"]
+            BEDROCK["Amazon Bedrock<br/>(Claude Access)"]
+            S3["Amazon S3<br/>(Object Storage)"]
+        end
+        
+        subgraph GPU_CLUSTER["GPU Compute Cluster"]
+            HGX["HGX H100 Systems"]
+            POD4["4-GPU Pods<br/>(Tensor Parallel)"]
+            POD8["8-GPU Pods<br/>(Tensor Parallel)"]
+            
+            HGX --> POD4
+            HGX --> POD8
+        end
+        
+        subgraph INFERENCE_LAYER["Inference Layer"]
+            TRITON["Triton Inference Server"]
+            SCHED["In-house Scheduler"]
+            TENSORRT["TensorRT-LLM"]
+            
+            TRITON --> SCHED
+            SCHED --> TENSORRT
+        end
+        
+        subgraph ROSE["ROSE Engine"]
+            CORE["Python/PyTorch Core"]
+            RUST["Rust Serving Layer"]
+            KV["KV Cache Manager"]
+            SPEC["Speculative Decoder"]
+            
+            CORE --> RUST
+            CORE --> KV
+            RUST --> SPEC
+        end
+        
+        subgraph SERVE["Model Serving"]
+            PREFILL["Prefill Phase"]
+            DECODE["Decode Phase"]
+            DISAGG["Disaggregated Serving"]
+            
+            PREFILL -.->|"Separate GPUs"| DISAGG
+            DECODE -.->|"Separate GPUs"| DISAGG
+        end
+    end
+    
+    subgraph DATA["DATA FLOW"]
+        REQ["User Request"]
+        PREPROC["Preprocess & Embed"]
+        SEARCH["Vector/Keyword Search"]
+        RETRIEVE["Retrieve Top-K"]
+        GENERATE["Generate Response"]
+        STREAM["Stream to User"]
+        
+        REQ --> PREPROC --> SEARCH --> RETRIEVE --> GENERATE --> STREAM
+    end
+    
+    classDef infra fill:#1a1a2e,stroke:#4a9eff,color:#fff
+    classDef gpu fill:#7d6608,stroke:#f4d03f,color:#fff
+    classDef inference fill:#145a32,stroke:#27ae60,color:#fff
+    classDef rose fill:#922b21,stroke:#e74c3c,color:#fff
+    classDef serve fill:#1e3a5f,stroke:#5dade2,color:#fff
+    classDef data fill:#2d3436,stroke:#95a5a6,color:#fff
+    
+    class EKS,BEDROCK,S3 infra
+    class HGX,POD4,POD8 gpu
+    class TRITON,SCHED,TENSORRT inference
+    class CORE,RUST,KV,SPEC rose
+    class PREFILL,DECODE,DISAGG serve
+    class REQ,PREPROC,SEARCH,RETRIEVE,GENERATE,STREAM data
+```
+
+## Simplicity: Architecture Blueprint
+
+This diagram shows the target architecture for **Simplicity** - a next-generation answer engine inspired by Perplexity.ai but with enhanced capabilities.
+
+### Key Innovations Over Perplexity:
+1. **Enhanced Model Router**: More sophisticated RL-based routing with cost-quality-latency optimization
+2. **Better Citation System**: Granular claim-level attribution with confidence scores
+3. **Multi-Modal Foundation**: Native multimodal support from the ground up
+4. **Distributed Knowledge**: Graph-based knowledge representation for complex relationships
+5. **Real-time Learning**: Continuous model improvement from user interactions
+6. **Privacy-First**: On-device processing options for sensitive queries
+
+### Development Phases:
+- **Phase 1**: Core RAG pipeline with hybrid search
+- **Phase 2**: Multi-model orchestration
+- **Phase 3**: Agentic workflows
+- **Phase 4**: Advanced reasoning and multi-modal support
