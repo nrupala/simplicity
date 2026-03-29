@@ -27,7 +27,6 @@ jobs:
           tar xzf maven.tar.gz
           mv apache-maven-3.9.14 /opt/maven
           echo "/opt/maven/bin" >> $GITHUB_PATH
-          ls -la /opt/maven/bin/
 
       - name: Verify Maven
         run: |
@@ -35,21 +34,15 @@ jobs:
           java -version
 
       - name: Build
-        run: |
-          mvn clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am -B -e || true
-          echo "---ERROR LOG ENDS ABOVE---"
-          ls -la simplicity-core/target/ 2>/dev/null || echo "No target dir"
-          ls -la simplicity-model-binder/target/ 2>/dev/null || echo "No target dir"
+        run: mvn clean compile -DskipTests -B
 
       - name: Package
-        run: |
-          mvn package -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
+        run: mvn package -DskipTests -B
 
       - name: Copy artifacts
         run: |
           mkdir -p release
-          cp simplicity-core/target/*.jar release/ 2>/dev/null || true
-          cp simplicity-model-binder/target/*.jar release/ 2>/dev/null || true
+          find . -name "*.jar" -path "*/target/*" -exec cp {} release/ \; 2>/dev/null || true
           ls -la release/
 
       - name: Upload
