@@ -36,7 +36,10 @@ jobs:
 
       - name: Build
         run: |
-          mvn clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am -B -e 2>&1 | head -100
+          mvn clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am -B -e || true
+          echo "---ERROR LOG ENDS ABOVE---"
+          ls -la simplicity-core/target/ 2>/dev/null || echo "No target dir"
+          ls -la simplicity-model-binder/target/ 2>/dev/null || echo "No target dir"
 
       - name: Package
         run: |
