@@ -1,0 +1,55 @@
+name: Java Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Java
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Maven
+        run: |
+          cd /tmp
+          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
+          tar xzf apache-maven-3.9.14-bin.tar.gz
+          mv apache-maven-3.9.14 /opt/maven
+          echo "/opt/maven/bin" >> $GITHUB_PATH
+
+      - name: Verify Maven
+        run: |
+          mvn --version
+          java -version
+
+      - name: Build
+        run: |
+          mvn clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
+
+      - name: Package
+        run: |
+          mvn package -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
+
+      - name: Copy artifacts
+        run: |
+          mkdir -p release
+          cp simplicity-core/target/*.jar release/ 2>/dev/null || true
+          cp simplicity-model-binder/target/*.jar release/ 2>/dev/null || true
+          ls -la release/
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-release
+          path: release
