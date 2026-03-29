@@ -23,10 +23,11 @@ jobs:
       - name: Setup Maven
         run: |
           cd /tmp
-          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
-          tar xzf apache-maven-3.9.14-bin.tar.gz
+          curl -sL -o maven.tar.gz https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
+          tar xzf maven.tar.gz
           mv apache-maven-3.9.14 /opt/maven
           echo "/opt/maven/bin" >> $GITHUB_PATH
+          ls -la /opt/maven/bin/
 
       - name: Verify Maven
         run: |
@@ -35,7 +36,7 @@ jobs:
 
       - name: Build
         run: |
-          mvn clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am -B
+          mvn clean compile -DskipTests -pl simplicity-core,simplicity-model-binder -am -B -e 2>&1 | head -100
 
       - name: Package
         run: |
