@@ -4,6 +4,42 @@
 
 ---
 
+## Downloads (v1.3.0)
+
+| Artifact | Description | Download |
+|----------|------------|----------|
+| simplicity-model-binder-1.0.0.jar | Model binding layer | [Download](releases/v1.3.0/simplicity-model-binder-1.0.0.jar) |
+| simplicity-core-1.0.0.jar | Core domain models | [Download](releases/v1.3.0/simplicity-core-1.0.0.jar) |
+| PWA (Web App) | Works in any browser | [Download](releases/v1.3.0/pwa.zip) or [Browse](releases/v1.3.0/pwa/) |
+
+### Quick Start
+
+```powershell
+# Run PWA - just open in browser
+# releases/v1.3.0/pwa/index.html
+
+# Run Java demo (requires Java 21)
+java -cp "releases/v1.3.0/simplicity-model-binder-1.0.0.jar;releases/v1.3.0/simplicity-core-1.0.0.jar" com.simplicity.model.binder.ModelBinderDemo
+```
+
+---
+
+## Free Open-Source LLMs
+
+**Comprehensive List**: https://github.com/eugeneyan/open-llms
+
+Popular models to try with Ollama:
+
+```bash
+ollama pull llama3.2        # Meta's latest (2GB)
+ollama pull mistral          # Efficient (4GB)
+ollama pull phi3             # Microsoft's tiny model (2GB)
+ollama pull qwen2.5-coder    # Coding specialized (8GB)
+ollama pull deepseek-r1      # Reasoning (5GB)
+```
+
+---
+
 ## Executive Summary
 
 Simplicity is a fundamentally different approach to AI-powered search and answers. While existing systems like Perplexity.ai, OpenAI, and Google trap your intelligence in their models, Simplicity ensures **YOU own your intelligence forever**.
