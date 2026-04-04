@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIMPLICITY - Your Sovereign AI Agent</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-size: 2.5em;
+      color: #4f46e5;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 1.1em;
+    }
+
+    .query-section {
+      margin-bottom: 30px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #query-input {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    #query-input:focus {
+      outline: none;
+      border-color: #4f46e5;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .response-section {
+      margin-top: 20px;
+    }
+
+    .response {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      border-bottom-color: #4f46e5;
+      color: #4f46e5;
+      font-weight: bold;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .knowledge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .knowledge-node {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+      background: #f9fafb;
+    }
+
+    .sovereignty-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .info-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .info-card svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+    }
+
+    .green {
+      color: #10b981;
+    }
+
+    .blue {
+      color: #3b82f6;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">⚡ SIMPLICITY</div>
+      <div class="subtitle">Your Sovereign AI Agent</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('query')">Query</div>
+      <div class="tab" onclick="switchTab('knowledge')">Knowledge</div>
+      <div class="tab" onclick="switchTab('sovereignty')">Sovereignty</div>
+    </div>
+
+    <div id="query-tab" class="tab-content active">
+      <div class="query-section">
+        <h2>Ask SIMPLICITY</h2>
+        <div class="input-group">
+          <input type="text" id="query-input" placeholder="Enter your question..." onkeypress="handleKeyPress(event)">
+          <button class="btn btn-primary" onclick="askSimplicity()">Ask</button>
+        </div>
+      </div>
+
+      <div class="response-section hidden" id="response-section">
+        <h3>Response</h3>
+        <div class="response" id="response-content"></div>
+      </div>
+    </div>
+
+    <div id="knowledge-tab" class="tab-content">
+      <h2>Knowledge Graph</h2>
+      <div id="knowledge-grid" class="knowledge-grid">
+        <p>Loading knowledge graph...</p>
+      </div>
+    </div>
+
+    <div id="sovereignty-tab" class="tab-content">
+      <h2>Data Sovereignty</h2>
+      <div class="sovereignty-info">
+        <div class="info-card">
+          <svg class="green" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-7-4z"
+              clip-rule="evenodd" />
+          </svg>
+          <h3>Your Data is Encrypted</h3>
+          <p>All knowledge is stored locally with GPG encryption</p>
+        </div>
+        <div class="info-card">
+          <svg class="blue" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+          </svg>
+          <h3>You Own Your Data</h3>
+          <p>No cloud storage, complete local control</p>
+        </div>
+      </div>
+
+      <h3>Data Management</h3>
+      <div class="input-group">
+        <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+        <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData()">
+        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'query';
+
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById(tabName + '-tab').classList.add('active');
+
+      currentTab = tabName;
+
+      if (tabName === 'knowledge') {
+        loadKnowledgeGraph();
+      }
+    }
+
+    async function askSimplicity() {
+      const query = document.getElementById('query-input').value.trim();
+      if (!query) return;
+
+      const responseSection = document.getElementById('response-section');
+      const responseContent = document.getElementById('response-content');
+
+      // Show loading
+      document.body.classList.add('loading');
+      responseContent.textContent = 'Thinking...';
+      responseSection.classList.remove('hidden');
+
+      try {
+        const response = await fetch('http://localhost:3001/api/query', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: query,
+            userId: 'default-user'
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          responseContent.textContent = data.response || data.text || 'No response received';
+        } else {
+          responseContent.textContent = 'Error: ' + (data.error || 'Unknown error');
+        }
+      } catch (error) {
+        responseContent.textContent = 'Error: Could not connect to SIMPLICITY backend. Make sure the backend is running on port 3001.';
+        console.error('Query error:', error);
+      } finally {
+        document.body.classList.remove('loading');
+      }
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        askSimplicity();
+      }
+    }
+
+    async function loadKnowledgeGraph() {
+      const grid = document.getElementById('knowledge-grid');
+
+      try {
+        const response = await fetch('http://localhost:3001/api/knowledge/graph/default-user');
+        const data = await response.json();
+
+        if (data.nodes && data.nodes.length > 0) {
+          grid.innerHTML = data.nodes.map(node => `
+                        <div class="knowledge-node">
+                            <strong>${node.label}</strong><br>
+                            <small>${node.type}</small>
+                        </div>
+                    `).join('');
+        } else {
+          grid.innerHTML = '<p>No knowledge nodes yet. Ask some questions to build your knowledge graph!</p>';
+        }
+      } catch (error) {
+        grid.innerHTML = '<p>Could not load knowledge graph. Make sure the backend is running.</p>';
+        console.error('Knowledge graph error:', error);
+      }
+    }
+
+    async function exportData() {
+      try {
+        const response = await fetch('http://localhost:3001/api/portability/export/default-user');
+        const data = await response.json();
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'simplicity-data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        alert('Export failed. Make sure the backend is running.');
+        console.error('Export error:', error);
+      }
+    }
+
+    async function importData() {
+      const fileInput = document.getElementById('import-file');
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          const response = await fetch('http://localhost:3001/api/portability/import/default-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+          });
+
+          if (response.ok) {
+            alert('Data imported successfully!');
+            if (currentTab === 'knowledge') {
+              loadKnowledgeGraph();
+            }
+          } else {
+            alert('Import failed. Please check the file format.');
+          }
+        } catch (error) {
+          alert('Import failed. Please check the file format.');
+          console.error('Import error:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Load knowledge graph on page load if on knowledge tab
+    if (currentTab === 'knowledge') {
+      loadKnowledgeGraph();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+node_modules/
+*.log
+.DS_Store
+.env
+.env.local
+.vscode/
+vscode-remote-wsl/
+simplicity-project/backend/data/
+simplicity-project/backend/node_modules/
+simplicity-project/backups/
+*.db
+.cache/
+dist/
+build/
+nul
