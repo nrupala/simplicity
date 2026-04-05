@@ -199,6 +199,7 @@
                 <button class="tab" data-tab="knowledge">Knowledge</button>
                 <button class="tab" data-tab="documents">Documents</button>
                 <button class="tab" data-tab="settings">Settings</button>
+                <button class="tab" data-tab="monitor">Monitor</button>
                 <button class="tab" data-tab="about">About</button>
             </div>
         </header>
@@ -295,6 +296,16 @@
                 </div>
             </div>
         </div>
+
+        <div class="panel" id="panel-monitor">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 18px;">System Monitor</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button id="monitor-toggle-btn" class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">Pause</button>
+                </div>
+            </div>
+            <div id="monitor-container" style="padding: 20px; overflow-y: auto; flex: 1;"></div>
+        </div>
     </div>
 
     <script>
@@ -327,6 +338,7 @@
                 if (tab.dataset.tab === 'knowledge') loadKnowledge();
                 if (tab.dataset.tab === 'models') loadModelsTab();
                 if (tab.dataset.tab === 'documents') loadDocuments();
+                if (tab.dataset.tab === 'monitor') startMonitor();
                 if (tab.dataset.tab === 'settings') renderSettings();
             });
         });
@@ -773,6 +785,107 @@
                 loadModelsTab();
             } catch (err) { alert('Delete failed: ' + err.message); }
         };
+
+        // System Monitor
+        let monitorEventSource = null;
+        let monitorActive = true;
+
+        function startMonitor() {
+            const container = document.getElementById('monitor-container');
+            if (monitorEventSource) return; // Already connected
+
+            monitorEventSource = new EventSource(API + '/monitor/stream');
+            monitorEventSource.onmessage = (event) => {
+                if (!monitorActive) return;
+                const data = JSON.parse(event.data);
+                renderMonitor(container, data);
+            };
+            monitorEventSource.onerror = () => {
+                monitorEventSource.close();
+                monitorEventSource = null;
+            };
+        }
+
+        function renderMonitor(container, data) {
+            const mem = data.memory;
+            const cpu = data.cpu;
+            const engine = data.engine;
+            const levelColors = {
+                optimal: '#22543d',
+                comfortable: '#2b6cb0',
+                throttle: '#d69e2e',
+                critical: '#e53e3e',
+                emergency: '#9b2c2c'
+            };
+            const levelColor = levelColors[data.level] || '#718096';
+
+            const ramPercent = (mem.used / mem.total * 100).toFixed(1);
+            const ramFreePercent = (mem.free / mem.total * 100).toFixed(1);
+
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div style="background: #f7fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 12px; color: #718096; font-weight: 600; margin-bottom: 8px;">SYSTEM MEMORY</div>
+                        <div style="font-size: 28px; font-weight: 700; color: #2d3748;">${mem.freeGB.toFixed(1)} GB</div>
+                        <div style="font-size: 13px; color: #718096;">free of ${mem.totalGB.toFixed(1)} GB</div>
+                        <div style="margin-top: 12px; background: #edf2f7; border-radius: 4px; height: 8px; overflow: hidden;">
+                            <div style="width: ${ramFreePercent}%; background: ${levelColor}; height: 100%; border-radius: 4px; transition: width 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 11px; color: #a0aec0; margin-top: 4px;">${ramFreePercent}% free | ${ramPercent}% used</div>
+                    </div>
+                    <div style="background: #f7fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 12px; color: #718096; font-weight: 600; margin-bottom: 8px;">MEMORY LEVEL</div>
+                        <div style="font-size: 28px; font-weight: 700; color: ${levelColor}; text-transform: uppercase;">${data.level}</div>
+                        <div style="font-size: 13px; color: #718096;">Trend: ${data.trend || 'stable'}</div>
+                        <div style="margin-top: 12px; font-size: 11px; color: #a0aec0;">
+                            Thresholds: Optimal >${(data.thresholds?.optimal * 100).toFixed(0)}% | Comfortable >${(data.thresholds?.comfortable * 100).toFixed(0)}% | Throttle >${(data.thresholds?.throttle * 100).toFixed(0)}% | Critical >${(data.thresholds?.critical * 100).toFixed(0)}%
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div style="background: #f7fafc; border-radius: 8px; padding: 14px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #718096; font-weight: 600;">CPU</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #2d3748;">${cpu.count} cores</div>
+                        <div style="font-size: 12px; color: #718096;">Load: ${cpu.loadAvg?.[0]?.toFixed(2) || 'N/A'}</div>
+                    </div>
+                    <div style="background: #f7fafc; border-radius: 8px; padding: 14px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #718096; font-weight: 600;">ENGINE</div>
+                        <div style="font-size: 16px; font-weight: 700; color: ${engine.loaded ? '#22543d' : '#718096'};">${engine.loaded ? 'Active' : 'Idle'}</div>
+                        <div style="font-size: 12px; color: #718096;">${engine.modelId ? engine.modelId.split('/').pop() : 'No model'}</div>
+                    </div>
+                    <div style="background: #f7fafc; border-radius: 8px; padding: 14px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #718096; font-weight: 600;">CONFIG</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #2d3748;">${engine.config?.n_ctx || 'N/A'}</div>
+                        <div style="font-size: 12px; color: #718096;">ctx | GPU: ${engine.config?.n_gpu_layers ?? 'N/A'} | T: ${engine.config?.n_threads || 'N/A'}</div>
+                    </div>
+                </div>
+
+                ${data.actions && data.actions.length > 0 ? `
+                <div style="background: #f7fafc; border-radius: 8px; padding: 14px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+                    <div style="font-size: 12px; color: #718096; font-weight: 600; margin-bottom: 8px;">RECENT ACTIONS (${data.actions.length})</div>
+                    ${data.actions.slice(-5).reverse().map(a => `
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #edf2f7; font-size: 12px;">
+                            <span style="padding: 2px 6px; border-radius: 3px; background: ${a.severity === 'critical' ? '#fed7d7' : a.severity === 'high' ? '#feebc8' : a.severity === 'medium' ? '#fefcbf' : '#c6f6d5'}; color: ${a.severity === 'critical' ? '#742a2a' : a.severity === 'high' ? '#7b341e' : a.severity === 'medium' ? '#744210' : '#22543d'}; font-weight: 600;">${a.type}</span>
+                            <span style="color: #4a5568;">${a.message}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+
+                <div style="font-size: 11px; color: #a0aec0; text-align: center;">
+                    Monitoring interval: 500ms | History: ${data.historyLength || 0} samples | Auto-adjustment: ${data.monitoring ? 'Active' : 'Paused'}
+                </div>
+            `;
+        }
+
+        document.getElementById('monitor-toggle-btn').addEventListener('click', function() {
+            monitorActive = !monitorActive;
+            this.textContent = monitorActive ? 'Pause' : 'Resume';
+            this.className = monitorActive ? 'btn btn-success' : 'btn btn-info';
+            this.style.padding = '6px 12px';
+            this.style.fontSize = '12px';
+        });
 
         function renderSettings() {
             const container = document.getElementById('settings-container');

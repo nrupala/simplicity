@@ -7,6 +7,8 @@ const knowledgeRoutes = require('./routes/knowledge');
 const portabilityRoutes = require('./routes/portability');
 const documentsRoutes = require('./routes/documents');
 const modelsRoutes = require('./routes/models');
+const monitorRoutes = require('./routes/monitor');
+const memoryOrchestrator = require('./engines/inference/memory-orchestrator');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,6 +27,7 @@ app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/portability', portabilityRoutes);
 app.use('/api/documents', documentsRoutes);
 app.use('/api/models', modelsRoutes);
+app.use('/api/monitor', monitorRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -38,6 +41,8 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`SIMPLICITY running on http://localhost:${PORT}`);
+    // Start memory orchestrator automatically
+    memoryOrchestrator.start();
 });
 
 module.exports = app;
