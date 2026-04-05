@@ -199,7 +199,7 @@
                 <button class="tab" data-tab="knowledge">Knowledge</button>
                 <button class="tab" data-tab="documents">Documents</button>
                 <button class="tab" data-tab="settings">Settings</button>
-                <button class="tab" data-tab="sovereignty">Sovereignty</button>
+                <button class="tab" data-tab="about">About</button>
             </div>
         </header>
 
@@ -268,18 +268,31 @@
             <div class="settings-scroll" id="settings-container"></div>
         </div>
 
-        <div class="panel" id="panel-sovereignty">
-            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;"><h2 style="font-size: 18px;">Data Sovereignty</h2></div>
-            <div class="panel-content">
-                <div class="sovereignty-item"><div class="icon">🔐</div><div><div class="title">Your Data is Encrypted</div><div class="desc">All knowledge is stored locally with GPG encryption</div></div></div>
-                <div class="sovereignty-item"><div class="icon">👤</div><div><div class="title">You Own Your Data</div><div class="desc">No cloud storage, complete local control</div></div></div>
-                <div class="sovereignty-item"><div class="icon">🔄</div><div><div class="title">Full Portability</div><div class="desc">Export and import your data anytime</div></div></div>
-                <div style="margin-top: 16px; display: flex; gap: 10px;">
-                    <button id="export-btn" class="btn btn-success">Export Data</button>
-                    <button id="import-btn" class="btn btn-info">Import Data</button>
-                    <input type="file" id="import-file" accept=".json" style="display: none;" />
+        <div class="panel" id="panel-about">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;"><h2 style="font-size: 18px;">About SIMPLICITY</h2></div>
+            <div class="panel-content" style="text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🧠</div>
+                <h1 style="font-size: 28px; color: #4c51bf; margin-bottom: 8px;">SIMPLICITY</h1>
+                <p style="font-size: 16px; color: #718096; margin-bottom: 24px;">Your Sovereign AI Agent</p>
+                <p style="font-size: 14px; color: #4a5568; max-width: 600px; margin: 0 auto 24px; line-height: 1.7;">
+                    SIMPLICITY is a sovereign AI inference platform that runs entirely locally on your machine. 
+                    No cloud dependencies. No data leaves your computer. Complete control over your AI experience.
+                </p>
+                <div style="display: inline-block; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 30px; margin-bottom: 24px;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🇨🇦</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #2d3748;">Proudly built in Canada</div>
+                    <div style="font-size: 14px; color: #718096;">CA</div>
                 </div>
-                <div style="margin-top: 12px;"><span class="status" id="backend-status">Checking...</span></div>
+                <div style="margin-bottom: 24px;">
+                    <a href="https://buymeacoffee.com/nrupalakolt" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #FFDD00; color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; transition: transform 0.2s;">
+                        ☕ Buy Me a Coffee
+                    </a>
+                </div>
+                <div style="font-size: 13px; color: #a0aec0; margin-top: 24px;">
+                    <p>Version 1.0.0-engine | Phase 1 MVP</p>
+                    <p>Built with node-llama-cpp, Express.js, SQLite3</p>
+                    <p style="margin-top: 8px;">© 2026 Nrupal. All rights reserved.</p>
+                </div>
             </div>
         </div>
     </div>
