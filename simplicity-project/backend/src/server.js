@@ -6,6 +6,7 @@ const sovereigntyRoutes = require('./routes/sovereignty');
 const knowledgeRoutes = require('./routes/knowledge');
 const portabilityRoutes = require('./routes/portability');
 const documentsRoutes = require('./routes/documents');
+const modelsRoutes = require('./routes/models');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ app.use('/api/sovereignty', sovereigntyRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/portability', portabilityRoutes);
 app.use('/api/documents', documentsRoutes);
+app.use('/api/models', modelsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

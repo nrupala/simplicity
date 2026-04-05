@@ -1,9 +1,16 @@
+const NativeAdapter = require('./native-adapter');
 const OllamaAdapter = require('./ollama-adapter');
 const LMStudioAdapter = require('./lmstudio-adapter');
 const OpenCodeAdapter = require('./opencode-adapter');
 const DockerModelRunnerAdapter = require('./dmr-adapter');
 
 const PROVIDERS = {
+    native: {
+        Adapter: NativeAdapter,
+        label: 'SIMPLICITY Engine',
+        defaultModel: '',
+        defaultHost: 'local'
+    },
     ollama: {
         Adapter: OllamaAdapter,
         label: 'Ollama',
@@ -33,7 +40,7 @@ const PROVIDERS = {
 class ModelRegistry {
     constructor() {
         this.adapters = new Map();
-        this.defaultProvider = 'ollama';
+        this.defaultProvider = 'native';
     }
 
     getProviderInfo() {
@@ -93,6 +100,27 @@ class ModelRegistry {
             }
         }
         return results;
+    }
+
+    // Native-specific methods
+    async loadNativeModel(modelId, options = {}) {
+        const adapter = this.getAdapter('native');
+        if (!adapter) throw new Error('Native adapter not available');
+        adapter.config.modelId = modelId;
+        Object.assign(adapter.config, options);
+        return await adapter.ensureLoaded();
+    }
+
+    async getNativeStatus() {
+        const adapter = this.getAdapter('native');
+        if (!adapter) return { loaded: false };
+        return await adapter.getEngineStatus();
+    }
+
+    async unloadNativeModel() {
+        const adapter = this.getAdapter('native');
+        if (!adapter) return { success: false };
+        return await adapter.unloadModel();
     }
 }
 

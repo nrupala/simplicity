@@ -159,42 +159,77 @@ router.post('/stream', async (req, res) => {
         const prompt = buildPrompt(query, contextMessages, combinedContext);
 
         try {
-            const stream = await adapter.client.generate({
-                model: adapter.config.model,
-                prompt: prompt,
-                stream: true,
-                options: {
+            // Native engine streaming
+            if (adapter.name === 'native' && typeof adapter.generateStream === 'function') {
+                let fullResponse = '';
+                for await (const chunk of adapter.generateStream(prompt, {
                     temperature: adapter.config.temperature,
-                    num_predict: adapter.config.maxTokens
+                    maxTokens: adapter.config.maxTokens,
+                    topK: adapter.config.topK,
+                    topP: adapter.config.topP,
+                    minP: adapter.config.minP,
+                    repeatPenalty: adapter.config.repeatPenalty
+                })) {
+                    fullResponse += chunk;
+                    res.write(`data: ${JSON.stringify({ token: chunk, done: false })}\n\n`);
                 }
-            });
 
-            let fullResponse = '';
-            for await (const chunk of stream) {
-                const content = chunk.response || '';
-                if (content) {
-                    fullResponse += content;
-                    res.write(`data: ${JSON.stringify({ token: content, done: false })}\n\n`);
+                conversation.push({ role: 'assistant', content: fullResponse });
+                trimContext(conversation);
+                await extractKnowledge(userId, query, fullResponse);
+
+                res.write(`data: ${JSON.stringify({
+                    done: true,
+                    model: adapter.config.modelId || 'native',
+                    knowledgeUsed: correlation.userKnowledge.length,
+                    documentsUsed: docResults?.length || 0,
+                    processingTime: Date.now() - startTime,
+                    conversationLength: conversation.length,
+                    correlation: {
+                        knowledgeCount: correlation.userKnowledge.length,
+                        confidence: correlation.confidence,
+                        queryType: correlation.queryType
+                    }
+                })}\n\n`);
+            } else {
+                // External provider streaming (Ollama, LM Studio, etc.)
+                const stream = await adapter.client.generate({
+                    model: adapter.config.model,
+                    prompt: prompt,
+                    stream: true,
+                    options: {
+                        temperature: adapter.config.temperature,
+                        num_predict: adapter.config.maxTokens
+                    }
+                });
+
+                let fullResponse = '';
+                for await (const chunk of stream) {
+                    const content = chunk.response || '';
+                    if (content) {
+                        fullResponse += content;
+                        res.write(`data: ${JSON.stringify({ token: content, done: false })}\n\n`);
+                    }
                 }
+
+                conversation.push({ role: 'assistant', content: fullResponse });
+                trimContext(conversation);
+                await extractKnowledge(userId, query, fullResponse);
+
+                res.write(`data: ${JSON.stringify({
+                    done: true,
+                    model: adapter.config.model,
+                    knowledgeUsed: correlation.userKnowledge.length,
+                    documentsUsed: docResults?.length || 0,
+                    processingTime: Date.now() - startTime,
+                    conversationLength: conversation.length,
+                    correlation: {
+                        knowledgeCount: correlation.userKnowledge.length,
+                        confidence: correlation.confidence,
+                        queryType: correlation.queryType
+                    }
+                })}\n\n`);
             }
-
-            conversation.push({ role: 'assistant', content: fullResponse });
-            trimContext(conversation);
-            await extractKnowledge(userId, query, fullResponse);
-
-            res.write(`data: ${JSON.stringify({
-                done: true,
-                model: adapter.config.model,
-                knowledgeUsed: correlation.userKnowledge.length,
-                documentsUsed: docResults?.length || 0,
-                processingTime: Date.now() - startTime,
-                conversationLength: conversation.length,
-                correlation: {
-                    knowledgeCount: correlation.userKnowledge.length,
-                    confidence: correlation.confidence,
-                    queryType: correlation.queryType
-                }
-            })}\n\n`);
         } catch (error) {
             console.error('Stream generation error:', error);
             try {

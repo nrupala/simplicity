@@ -195,6 +195,7 @@
             <div class="logo">SIMPLICITY <span>Your Sovereign AI Agent</span></div>
             <div class="tabs">
                 <button class="tab active" data-tab="query">Chat</button>
+                <button class="tab" data-tab="models">Models</button>
                 <button class="tab" data-tab="knowledge">Knowledge</button>
                 <button class="tab" data-tab="documents">Documents</button>
                 <button class="tab" data-tab="settings">Settings</button>
@@ -231,6 +232,19 @@
                 <textarea id="query-input" placeholder="Ask anything... (Shift+Enter for new line)" rows="1"></textarea>
                 <button id="query-btn">Send</button>
             </div>
+        </div>
+
+        <div class="panel" id="panel-models">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 18px;">Models</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button id="load-model-btn" class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">Load Model</button>
+                    <button id="unload-model-btn" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">Unload</button>
+                    <button id="refresh-models-tab-btn" class="btn btn-info" style="padding: 6px 12px; font-size: 12px;">Refresh</button>
+                </div>
+            </div>
+            <div id="models-container" style="padding: 20px; overflow-y: auto; flex: 1;"></div>
+            <div id="engine-status-bar" style="padding: 12px 20px; border-top: 1px solid #e2e8f0; background: #fafafa; font-size: 12px;"></div>
         </div>
 
         <div class="panel" id="panel-knowledge">
@@ -298,6 +312,7 @@
                 tab.classList.add('active');
                 document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
                 if (tab.dataset.tab === 'knowledge') loadKnowledge();
+                if (tab.dataset.tab === 'models') loadModelsTab();
                 if (tab.dataset.tab === 'documents') loadDocuments();
                 if (tab.dataset.tab === 'settings') renderSettings();
             });
@@ -625,11 +640,9 @@
         document.getElementById('doc-upload').addEventListener('change', async (e) => {
             const files = e.target.files;
             if (!files.length) return;
-
             const formData = new FormData();
             for (const file of files) formData.append('files', file);
             formData.append('userId', userId);
-
             try {
                 const res = await fetch(API + '/documents/upload', { method: 'POST', body: formData });
                 const data = await res.json();
@@ -638,6 +651,115 @@
             } catch (err) { alert('Upload failed: ' + err.message); }
             e.target.value = '';
         });
+
+        // Models tab
+        async function loadModelsTab() {
+            const container = document.getElementById('models-container');
+            const statusBar = document.getElementById('engine-status-bar');
+            container.innerHTML = '<p>Loading...</p>';
+            statusBar.innerHTML = 'Loading engine status...';
+
+            try {
+                const [modelsRes, statusRes] = await Promise.all([
+                    fetch(API + '/models/available'),
+                    fetch(API + '/models/status')
+                ]);
+                const modelsData = await modelsRes.json();
+                const statusData = await statusRes.json();
+
+                // Engine status bar
+                if (statusData.loaded) {
+                    statusBar.innerHTML = `<span style="color: #22543d; font-weight: 600;">● Engine Active</span> | Model: ${statusData.modelId} | Context: ${statusData.config?.n_ctx || 'N/A'} | GPU Layers: ${statusData.config?.n_gpu_layers ?? 'N/A'} | Memory: ${statusData.memory?.freeGB || '?'}GB free (${statusData.memoryLevel})`;
+                } else {
+                    statusBar.innerHTML = `<span style="color: #718096;">○ Engine Idle</span> | No model loaded | Memory: ${statusData.memory?.freeGB || '?'}GB free (${statusData.memoryLevel})`;
+                }
+
+                // Models list
+                if (modelsData.models.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No models found. Download a GGUF model or point to an existing one.</div>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div style="margin-bottom: 12px; font-size: 13px; color: #718096;">
+                        ${modelsData.models.length} models found | ${modelsData.models.filter(m => m.external).length} from external folders
+                    </div>
+                    <div style="display: grid; gap: 8px;">
+                        ${modelsData.models.map(m => {
+                            const isActive = statusData.loaded && (m.id === statusData.modelId || m.path === statusData.modelId);
+                            return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: ${isActive ? '#ebf4ff' : '#f7fafc'}; border-radius: 8px; border: 2px solid ${isActive ? '#4c51bf' : '#e2e8f0'};">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${m.filename}</div>
+                                    <div style="font-size: 12px; color: #718096;">
+                                        ${m.sizeGB} GB | ${m.source || 'SIMPLICITY'}${m.external ? ' (external)' : ''} | ${m.memoryEstimate ? 'Est. RAM: ' + m.memoryEstimate.recommendedRAM : ''}
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                                    ${isActive ? '<span style="padding: 4px 8px; background: #4c51bf; color: white; border-radius: 4px; font-size: 11px; font-weight: 600;">ACTIVE</span>' : `<button class="btn btn-success" onclick="loadModel('${m.id}')" style="padding: 4px 10px; font-size: 11px;">Load</button>`}
+                                    ${!m.external ? `<button class="btn btn-danger" onclick="deleteModelFile('${m.id}')" style="padding: 4px 10px; font-size: 11px;">Delete</button>` : ''}
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                `;
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state">Failed to load models: ${err.message}</div>`;
+                statusBar.innerHTML = `<span style="color: #e53e3e;">Error loading engine status</span>`;
+            }
+        }
+
+        window.loadModel = async function(modelId) {
+            const statusBar = document.getElementById('engine-status-bar');
+            statusBar.innerHTML = '<span style="color: #4c51bf;">Loading model...</span>';
+            try {
+                const res = await fetch(API + '/models/load', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ modelId, n_ctx: 2048, n_gpu_layers: 0 })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Model loaded successfully!');
+                    loadModelsTab();
+                } else {
+                    alert('Failed to load: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) { alert('Load failed: ' + err.message); }
+        };
+
+        document.getElementById('load-model-btn').addEventListener('click', () => {
+            const url = prompt('Enter HuggingFace repo/file URL (e.g., bartowski/gemma-3-4b-it-GGUF/gemma-3-4b-it-Q4_K_M.gguf):');
+            if (!url) return;
+            alert('Download started. This may take a while for large models.');
+            fetch(API + '/models/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repo: url })
+            }).then(r => r.json()).then(d => {
+                alert(d.success ? 'Download complete!' : 'Failed: ' + d.error);
+                loadModelsTab();
+            }).catch(err => alert('Download failed: ' + err.message));
+        });
+
+        document.getElementById('unload-model-btn').addEventListener('click', async () => {
+            try {
+                await fetch(API + '/models/unload', { method: 'POST' });
+                alert('Model unloaded.');
+                loadModelsTab();
+            } catch (err) { alert('Unload failed: ' + err.message); }
+        });
+
+        document.getElementById('refresh-models-tab-btn').addEventListener('click', loadModelsTab);
+
+        window.deleteModelFile = async function(modelId) {
+            if (!confirm('Delete this model from disk?')) return;
+            try {
+                await fetch(API + '/models/' + modelId, { method: 'DELETE' });
+                alert('Model deleted.');
+                loadModelsTab();
+            } catch (err) { alert('Delete failed: ' + err.message); }
+        };
 
         function renderSettings() {
             const container = document.getElementById('settings-container');
