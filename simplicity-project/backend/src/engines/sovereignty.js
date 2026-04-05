@@ -90,5 +90,23 @@ module.exports = {
     verifySignature,
     createZKProof,
     encryptData,
-    decryptData
+    decryptData,
+    getUserProfile,
+    setUserProfile
 };
+
+// User profile management (stub - would use database in production)
+const userProfiles = new Map();
+
+async function getUserProfile(userId) {
+    return userProfiles.get(userId) || {
+        preferredTone: 'professional',
+        interactionStyle: 'balanced',
+        knowledgeLevel: 'intermediate'
+    };
+}
+
+async function setUserProfile(userId, profile) {
+    userProfiles.set(userId, profile);
+    return { success: true };
+}

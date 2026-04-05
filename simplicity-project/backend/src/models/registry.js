@@ -1,100 +1,100 @@
 const OllamaAdapter = require('./ollama-adapter');
-const GenericModelAdapter = require('./generic-adapter');
+const LMStudioAdapter = require('./lmstudio-adapter');
+const OpenCodeAdapter = require('./opencode-adapter');
+const DockerModelRunnerAdapter = require('./dmr-adapter');
 
-// Model registry for SIMPLICITY
+const PROVIDERS = {
+    ollama: {
+        Adapter: OllamaAdapter,
+        label: 'Ollama',
+        defaultModel: 'gemma3:4b',
+        defaultHost: 'http://localhost:11434'
+    },
+    lmstudio: {
+        Adapter: LMStudioAdapter,
+        label: 'LM Studio',
+        defaultModel: '',
+        defaultHost: 'http://localhost:1234'
+    },
+    opencode: {
+        Adapter: OpenCodeAdapter,
+        label: 'OpenCode',
+        defaultModel: 'codellama',
+        defaultHost: 'http://localhost:50561'
+    },
+    dmr: {
+        Adapter: DockerModelRunnerAdapter,
+        label: 'Docker Model Runner',
+        defaultModel: 'llama3.2',
+        defaultHost: 'http://localhost:12434'
+    }
+};
+
 class ModelRegistry {
     constructor() {
         this.adapters = new Map();
-        this.defaultModel = null;
+        this.defaultProvider = 'ollama';
     }
 
-    // Register a model adapter
-    registerAdapter(name, adapter) {
-        this.adapters.set(name, adapter);
-        if (!this.defaultModel) {
-            this.defaultModel = name;
-        }
-    }
-
-    // Get adapter by name
-    getAdapter(name) {
-        return this.adapters.get(name);
-    }
-
-    // Get all registered adapters
-    getAllAdapters() {
-        return Array.from(this.adapters.entries()).map(([name, adapter]) => ({
-            name,
-            type: adapter.constructor.name,
-            config: adapter.config
+    getProviderInfo() {
+        return Object.entries(PROVIDERS).map(([key, info]) => ({
+            id: key,
+            label: info.label,
+            defaultModel: info.defaultModel,
+            defaultHost: info.defaultHost
         }));
     }
 
-    // Generate text using specified model
-    async generate(modelName, prompt, options = {}) {
-        const adapter = this.getAdapter(modelName);
-        if (!adapter) {
-            throw new Error(`Model adapter '${modelName}' not found`);
+    getAdapter(name) {
+        if (!this.adapters.has(name)) {
+            const info = PROVIDERS[name];
+            if (!info) return null;
+            this.adapters.set(name, new info.Adapter({
+                model: info.defaultModel,
+                host: info.defaultHost
+            }));
         }
+        return this.adapters.get(name);
+    }
+
+    setDefaultProvider(name) {
+        if (PROVIDERS[name]) {
+            this.defaultProvider = name;
+        }
+    }
+
+    getDefaultProvider() {
+        return this.defaultProvider;
+    }
+
+    async generate(providerName, prompt, options = {}) {
+        const adapter = this.getAdapter(providerName || this.defaultProvider);
+        if (!adapter) throw new Error(`Provider '${providerName}' not found`);
         return await adapter.generate(prompt, options);
     }
 
-    // Generate using default model
     async generateDefault(prompt, options = {}) {
-        if (!this.defaultModel) {
-            throw new Error('No default model set');
-        }
-        return await this.generate(this.defaultModel, prompt, options);
+        return await this.generate(this.defaultProvider, prompt, options);
     }
 
-    // List models for all adapters
-    async listAllModels() {
+    async checkProvider(name) {
+        const adapter = this.getAdapter(name);
+        if (!adapter) return false;
+        return await adapter.isAvailable();
+    }
+
+    async checkAllProviders() {
         const results = {};
-        for (const [name, adapter] of this.adapters) {
+        for (const [name, info] of Object.entries(PROVIDERS)) {
             try {
-                results[name] = await adapter.listModels();
-            } catch (error) {
-                console.error(`Failed to list models for ${name}:`, error);
-                results[name] = [];
+                results[name] = await this.checkProvider(name);
+            } catch {
+                results[name] = false;
             }
         }
         return results;
     }
-
-    // Initialize with default adapters
-    initializeDefaults() {
-        // Ollama adapter
-        const ollamaAdapter = new OllamaAdapter({
-            model: 'llama3.2'
-        });
-        this.registerAdapter('ollama', ollamaAdapter);
-
-        // Generic adapter (can be configured for other APIs)
-        const genericAdapter = new GenericModelAdapter({
-            apiUrl: process.env.GENERIC_MODEL_API_URL || '',
-            apiKey: process.env.GENERIC_MODEL_API_KEY || '',
-            model: 'generic'
-        });
-        this.registerAdapter('generic', genericAdapter);
-    }
-
-    // Set default model
-    setDefaultModel(name) {
-        if (this.adapters.has(name)) {
-            this.defaultModel = name;
-        } else {
-            throw new Error(`Model '${name}' not registered`);
-        }
-    }
-
-    // Get default model name
-    getDefaultModel() {
-        return this.defaultModel;
-    }
 }
 
-// Singleton instance
 const modelRegistry = new ModelRegistry();
-modelRegistry.initializeDefaults();
-
 module.exports = modelRegistry;

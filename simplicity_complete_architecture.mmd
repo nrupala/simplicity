@@ -1,0 +1,303 @@
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#0d1117', 'primaryTextColor': '#c9d1d9', 'primaryBorderColor': '#58a6ff', 'lineColor': '#58a6ff', 'secondaryColor': '#161b22', 'tertiaryColor': '#21262d'}}}%%
+flowchart TB
+    %% Styling
+    classDef user fill:#1f6feb,stroke:#58a6ff,color:#fff
+    classDef kg fill:#238636,stroke:#3fb950,color:#fff
+    classDef model fill:#8957e5,stroke:#bc8cff,color:#fff
+    classDef correlation fill:#f0883e,stroke:#ffa657,color:#fff
+    classDef gan fill:#da3633,stroke:#ff7b72,color:#fff
+    classDef sentience fill:#db61a2,stroke:#f778ba,color:#fff
+    classDef sovereignty fill:#39d353,stroke:#56d364,color:#fff
+    classDef api fill:#6e7681,stroke:#8b949e,color:#fff
+
+    subgraph USER["👤 USER LAYER"]
+        direction TB
+        USER_KG["User's Knowledge Graph<br/>🏛️ OWNED BY USER"]
+        USER_PREFS["User Preferences<br/>🔧 Configurable"]
+        USER_HISTORY["Interaction History<br/>📊 Owned by User"]
+        USER_CONSENT["Consent & Privacy<br/>🔐 User Controlled"]
+    end
+
+    USER_KG --> USER_PREFS
+    USER_PREFS --> USER_HISTORY
+    USER_HISTORY --> USER_CONSENT
+
+    subgraph CORRELATION["🔗 KNOWLEDGE ↔ MODEL CORRELATION"]
+        direction TB
+        
+        subgraph CORR_ANALYSIS["Analysis Engine"]
+            USER_KNOWLEDGE["User Knowledge Analysis"]
+            MODEL_CAPABILITIES["Model Capabilities Analysis"]
+            SESSION_CONTEXT["Session Context Analysis"]
+        end
+        
+        subgraph CORR_MATRIX["Correlation Matrix"]
+            TOPIC_CORR["Topic Correlation"]
+            COMPLEXITY_CORR["Complexity Correlation"]
+            STYLE_CORR["Style Correlation"]
+            DOMAIN_ALIGN["Domain Alignment"]
+        end
+        
+        subgraph UNIFIED["Unified Intelligence State"]
+            USER_WEIGHT["User Weight: 0-1"]
+            MODEL_WEIGHT["Model Weight: 0-1"]
+            APPROACH["Response Approach"]
+            CONFIDENCE["Confidence Score"]
+        end
+        
+        USER_KNOWLEDGE --> TOPIC_CORR
+        MODEL_CAPABILITIES --> TOPIC_CORR
+        SESSION_CONTEXT --> COMPLEXITY_CORR
+        USER_KNOWLEDGE --> DOMAIN_ALIGN
+        MODEL_CAPABILITIES --> DOMAIN_ALIGN
+        
+        TOPIC_CORR --> USER_WEIGHT
+        COMPLEXITY_CORR --> USER_WEIGHT
+        TOPIC_CORR --> MODEL_WEIGHT
+        COMPLEXITY_CORR --> MODEL_WEIGHT
+        
+        USER_WEIGHT --> APPROACH
+        MODEL_WEIGHT --> CONFIDENCE
+    end
+
+    subgraph PERSONIFICATION["🎭 PERSONIFICATION ENGINE"]
+        PERSONIFIED_RESP["Personified Response"]
+        EMOTIONAL_TONE["Emotional Tone Generator"]
+        FOLLOW_UP["Follow-up Suggestions"]
+        LEARNING_OPPS["Learning Opportunities"]
+        
+        CORR_ANALYSIS --> PERSONIFIED_RESP
+        APPROACH --> EMOTIONAL_TONE
+        CONFIDENCE --> PERSONIFIED_RESP
+    end
+
+    subgraph GAN_RAG["🧠 GAN-RAG COUPLING"]
+        subgraph GENERATOR["Generator Network"]
+            GEN_PRIMARY["Primary Generator"]
+            GEN_ALT["Alternative Generator"]
+            GEN_CONCISE["Concise Generator"]
+            GEN_DETAILED["Detailed Generator"]
+        end
+        
+        subgraph DISCRIMINATOR["Discriminator Network"]
+            DISC_ACCURACY["Factual Accuracy"]
+            DISC_RELEVANCE["Relevance Scoring"]
+            DISC_QUALITY["Quality Assessment"]
+            DISC_PERSONAL["Personalization Check"]
+        end
+        
+        subgraph RAG_RETRIEVAL["RAG Retrieval"]
+            VECTOR_SEARCH["Vector Search (Lucene)"]
+            KEYWORD_SEARCH["Keyword Search (BM25)"]
+            HYBRID_MERGE["Hybrid Merge"]
+            RERANKER["Neural Reranker"]
+            KNOWLEDGE_GROUND["Knowledge Grounding"]
+        end
+        
+        subgraph LEARNING["Continuous Learning"]
+            FEEDBACK_COLLECT["Feedback Collection"]
+            WEIGHT_UPDATE["Weight Updates"]
+            MODEL_EVOLVE["Model Evolution"]
+            PATTERN_LEARN["Pattern Learning"]
+        end
+        
+        VECTOR_SEARCH --> HYBRID_MERGE
+        KEYWORD_SEARCH --> HYBRID_MERGE
+        HYBRID_MERGE --> RERANKER
+        RERANKER --> KNOWLEDGE_GROUND
+        
+        KNOWLEDGE_GROUND --> GEN_PRIMARY
+        KNOWLEDGE_GROUND --> GEN_ALT
+        KNOWLEDGE_GROUND --> GEN_CONCISE
+        KNOWLEDGE_GROUND --> GEN_DETAILED
+        
+        GEN_PRIMARY --> DISC_ACCURACY
+        GEN_ALT --> DISC_RELEVANCE
+        GEN_CONCISE --> DISC_QUALITY
+        GEN_DETAILED --> DISC_PERSONAL
+        
+        DISC_ACCURACY --> WEIGHT_UPDATE
+        DISC_RELEVANCE --> WEIGHT_UPDATE
+        DISC_QUALITY --> WEIGHT_UPDATE
+        DISC_PERSONAL --> WEIGHT_UPDATE
+        FEEDBACK_COLLECT --> WEIGHT_UPDATE
+        WEIGHT_UPDATE --> MODEL_EVOLVE
+        MODEL_EVOLVE --> PATTERN_LEARN
+        PATTERN_LEARN --> VECTOR_SEARCH
+    end
+
+    subgraph MODEL_LAYER["🤖 AI MODEL LAYER"]
+        subgraph PROPRIETARY["Proprietary Models"]
+            GPT["GPT-4o/5 (OpenAI)"]
+            CLAUDE["Claude 3.5/4 (Anthropic)"]
+            GEMINI["Gemini 2.0 (Google)"]
+        end
+        
+        subgraph OPENSOURCE["Open Source Models"]
+            LLAMA["Llama 3.1/3.2 (Meta)"]
+            MISTRAL["Mistral Nemo/Pixtral"]
+            DEEPSEEK["DeepSeek V3"]
+            LOCAL["Local Models (Ollama)"]
+        end
+        
+        subgraph SPECIALIZED["Specialized Models"]
+            CODE["Code Models"]
+            EMBED["Embedding Models"]
+            RERANK["Reranking Models"]
+        end
+    end
+
+    subgraph SENTIENCE["💜 SENTIENCE ENGINE"]
+        EMOTIONS["Emotion Engine<br/>(Curious, Empathetic, Humble...)"]
+        PERSONALITY["Personality Engine<br/>(Professional, Warm, Direct...)"]
+        EXPRESSION["Expression Generator<br/>(Natural Language)"]
+        
+        PERSONALITY --> EMOTIONS
+        EMOTIONS --> EXPRESSION
+    end
+
+    subgraph SOVEREIGNTY["🏛️ USER SOVEREIGNTY"]
+        EXPORT["Export Engine<br/>(JSON, GraphQL, RDF)"]
+        IMPORT["Import Engine<br/>(From Any System)"]
+        CONSENT["Consent Manager"]
+        ENCRYPTION["Encryption Layer"]
+        PORTABILITY["Portability Engine<br/>(Any Model, Any System)"]
+        
+        USER_KG --> EXPORT
+        USER_KG --> IMPORT
+        USER_CONSENT --> CONSENT
+        EXPORT --> ENCRYPTION
+        IMPORT --> ENCRYPTION
+        ENCRYPTION --> PORTABILITY
+    end
+
+    subgraph INTERFACE["🎛️ INTERFACE LAYER"]
+        CASUAL["🎯 Casual Mode<br/>(Simple, Defaults)"]
+        STANDARD["⚖️ Standard Mode<br/>(Full Access)"]
+        EXPERT["🧠 Expert Mode<br/>(Raw Config)"]
+        ARCHITECT["🏗️ Architect Mode<br/>(Enterprise)"]
+    end
+
+    %% Main Flow Connections
+    USER_KG -->|"Correlate with"| CORRELATION
+    MODEL_LAYER -->|"Correlate with"| CORRELATION
+    
+    CORRELATION -->|"Unified Intelligence"| PERSONIFICATION
+    GAN_RAG -->|"Generation Candidates"| PERSONIFICATION
+    PERSONIFICATION -->|"Personified Output"| OUTPUT
+    
+    USER_PREFS -->|"Configure"| SENTIENCE
+    USER_PREFS -->|"Configure"| INTERFACE
+    USER_PREFS -->|"Configure"| GAN_RAG
+    
+    SENTIENCE -->|"Inject Emotion"| PERSONIFICATION
+    SOVEREIGNTY -->|"Protect Data"| CORRELATION
+    
+    OUTPUT["📤 Personified, Cited,<br/>Personalized Response"]
+```
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#0d1117', 'primaryTextColor': '#c9d1d9', 'primaryBorderColor': '#58a6ff', 'lineColor': '#58a6ff', 'secondaryColor': '#161b22'}}}%%
+flowchart LR
+    subgraph INPUT["📥 INPUT"]
+        Q["User Query"]
+        U["User Context"]
+        P["Preferences"]
+    end
+
+    subgraph PROCESS["⚙️ PROCESSING PIPELINE"]
+        direction TB
+        
+        P1["1. Intent Analysis<br/>Classify query type & complexity"]
+        
+        P2["2. User Knowledge Correlation<br/>Analyze user's expertise in this area"]
+        
+        P3["3. Model Capability Analysis<br/>Assess which models fit best"]
+        
+        P4["4. Correlation Engine<br/>Compute User-Knowledge ↔ Model Correlation"]
+        
+        P5["5. Determine Approach<br/>USER_GUIDED | COLLABORATIVE | EDUCATIONAL | ..."]
+        
+        P6["6. RAG Retrieval<br/>Hybrid search with personalization"]
+        
+        P7["7. GAN Generation<br/>Multiple candidates from different models"]
+        
+        P8["8. Discriminate & Score<br/>Rank candidates with personalization"]
+        
+        P9["9. Personification<br/>Apply emotional tone & user alignment"]
+        
+        P10["10. Sovereign Output<br/>Cited, confident, personalized response"]
+    end
+
+    subgraph OUTPUT["📤 OUTPUT"]
+        RESPONSE["Personified Response"]
+        CITATIONS["Citations with confidence"]
+        EMOTION["Emotional injection"]
+        SUGGESTIONS["Follow-up suggestions"]
+        LEARNING["Learning opportunities"]
+    end
+
+    INPUT --> PROCESS
+    PROCESS --> OUTPUT
+
+    classDef process fill:#1f6feb,stroke:#58a6ff,color:#fff
+    classDef output fill:#238636,stroke:#3fb950,color:#fff
+    
+    class P1,P2,P3,P4,P5,P6,P7,P8,P9,P10 process
+    class RESPONSE,CITATIONS,EMOTION,SUGGESTIONS,LEARNING output
+```
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#0d1117', 'primaryTextColor': '#c9d1d9', 'primaryBorderColor': '#58a6ff', 'lineColor': '#58a6ff'}}}%%
+flowchart TB
+    subgraph PORTABILITY["🔄 DATA PORTABILITY"]
+        USER_KG["User Knowledge Graph<br/>(Owned by User)"]
+        
+        EXPORT_FORMATS["Export Formats"]
+        JSON["JSON"]
+        GRAPHQL["GraphQL Schema"]
+        RDF["RDF/OWL"]
+        JSONLD["JSON-LD"]
+        
+        USER_KG --> EXPORT_FORMATS
+        EXPORT_FORMATS --> JSON
+        EXPORT_FORMATS --> GRAPHQL
+        EXPORT_FORMATS --> RDF
+        EXPORT_FORMATS --> JSONLD
+    end
+
+    subgraph TARGET_SYSTEMS["🎯 Target Systems"]
+        SIMPLICITY["Simplicity (Any Model)"]
+        OPENAI["OpenAI Ecosystem"]
+        ANTHROPIC["Anthropic Ecosystem"]
+        GOOGLE["Google AI"]
+        LOCAL["Local AI (Ollama)"]
+        CUSTOM["Custom Deployment"]
+    end
+
+    subgraph PRINCIPLES["🏛️ Sovereignty Principles"]
+        OWNERSHIP["User OWNS their data"]
+        CONTROL["User CONTROLS access"]
+        PORTABILITY["Data PORTABLE anywhere"]
+        CONSENT["Explicit CONSENT required"]
+        TRANSPARENCY["Full TRANSPARENCY"]
+    end
+
+    JSON -->|"Migrate to"| SIMPLICITY
+    GRAPHQL -->|"Migrate to"| OPENAI
+    RDF -->|"Migrate to"| ANTHROPIC
+    JSONLD -->|"Migrate to"| GOOGLE
+    GRAPHQL -->|"Migrate to"| LOCAL
+    JSON -->|"Migrate to"| CUSTOM
+
+    classDef kg fill:#238636,stroke:#3fb950,color:#fff
+    classDef format fill:#8957e5,stroke:#bc8cff,color:#fff
+    classDef target fill:#1f6feb,stroke:#58a6ff,color:#fff
+    classDef principle fill:#da3633,stroke:#ff7b72,color:#fff
+    
+    class USER_KG kg
+    class JSON,GRAPHQL,RDF,JSONLD format
+    class SIMPLICITY,OPENAI,ANTHROPIC,GOOGLE,LOCAL,CUSTOM target
+    class OWNERSHIP,CONTROL,PORTABILITY,CONSENT,TRANSPARENCY principle
+```

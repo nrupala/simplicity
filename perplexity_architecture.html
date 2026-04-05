@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perplexity.ai Architecture - Simplicity Blueprint</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent-blue: #4a9eff;
+            --accent-purple: #9b59b6;
+            --accent-green: #27ae60;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 0;
+            border-bottom: 1px solid rgba(74, 158, 255, 0.2);
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4a9eff, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-number {
+            background: var(--accent-purple);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .diagram-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(74, 158, 255, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .diagram-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .diagram-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .mermaid {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(74, 158, 255, 0.2);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .component-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(74, 158, 255, 0.2);
+        }
+
+        .component-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--accent-purple);
+        }
+
+        .component-list {
+            list-style: none;
+        }
+
+        .component-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(74, 158, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .component-list li:last-child {
+            border-bottom: none;
+        }
+
+        .model-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .model-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .model-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .model-provider {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            border-top: 1px solid rgba(74, 158, 255, 0.2);
+            margin-top: 4rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Perplexity.ai Architecture</h1>
+            <p class="subtitle">Deep dive into the AI answer engine that redefined web search</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">780M+</div>
+                <div class="stat-label">Monthly Queries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">200B+</div>
+                <div class="stat-label">URLs Tracked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">400PB</div>
+                <div class="stat-label">Hot Storage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">&lt;2s</div>
+                <div class="stat-label">Response Time</div>
+            </div>
+        </div>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">1</span>
+                Complete System Architecture
+            </h2>
+            <div class="diagram-card">
+                <h3 class="diagram-title">End-to-End Data Flow</h3>
+                <p class="diagram-description">The full Perplexity architecture from query input to cited answer output, showing all major components and their interactions.</p>
+                <div class="mermaid">
+flowchart TB
+    subgraph CLIENT["CLIENT LAYER"]
+        WEB["Web App"]
+        MOBILE["Mobile Apps"]
+        API["API Clients"]
+        COPILOT["Copilot Mode"]
+    end
+
+    subgraph GATEWAY["API GATEWAY"]
+        LB["Load Balancer"]
+        AUTH["Auth & Rate Limit"]
+    end
+
+    subgraph INTELLIGENCE["INTELLIGENCE LAYER"]
+        ROUTER["Model Router (PPO-RL)"]
+        CLASSIFIER["Intent Classifier"]
+        MODE["Search Mode Selector"]
+    end
+
+    subgraph QUERY["QUERY PROCESSING"]
+        QP["Intent Parser"]
+        QT["Type Detector"]
+        QD["Query Decomposer"]
+    end
+
+    subgraph RETRIEVAL["RETRIEVAL (Vespa AI)"]
+        HYBRID["Hybrid Search"]
+        DENSE["Dense (Vector)"]
+        SPARSE["Sparse (BM25)"]
+        
+        subgraph INDEX["Index Infrastructure"]
+            CRAWLER["Crawler"]
+            CHUNK["Chunker"]
+            PARSER["AI Parser"]
+        end
+    end
+
+    subgraph RERANK["RERANKING"]
+        RERANKER["ML Reranker"]
+        SELECT["Doc Selector"]
+    end
+
+    subgraph GEN["GENERATION"]
+        CONTEXT["Context Builder"]
+        GROUNDED["Grounded Gen"]
+        CITATION["Citation Mapper"]
+    end
+
+    subgraph MODELS["AI MODELS"]
+        SONAR["Sonar Family"]
+        PPLX["PPLX 7B/70B/405B"]
+        GPT["GPT-4o/5"]
+        CLAUDE["Claude 3.5/4"]
+        GEMINI["Gemini 2.0"]
+        GROK["Grok 3"]
+    end
+
+    subgraph INFERENCE["INFERENCE (ROSE)"]
+        TRITON["Triton"]
+        TENSORRT["TensorRT-LLM"]
+        H100["H100 GPUs"]
+    end
+
+    subgraph COMPUTER["PERPLEXITY COMPUTER"]
+        AGENT["19-Model Agent"]
+        PLANNER["Planner"]
+        MCP["MCP Tools"]
+    end
+
+    CLIENT --> LB --> AUTH --> QP
+    QP --> RETRIEVAL --> RERANK --> GEN
+    CLASSIFIER --> ROUTER --> MODELS --> INFERENCE --> GEN
+    MODE --> COMPUTER --> RETRIEVAL
+    GEN --> CLIENT
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">2</span>
+                RAG Pipeline Flow
+            </h2>
+            <div class="diagram-card">
+                <h3 class="diagram-title">Retrieval-Augmented Generation Pipeline</h3>
+                <div class="mermaid">
+flowchart LR
+    subgraph INPUT["INPUT"]
+        Q["User Query"]
+    end
+    
+    subgraph PROCESS["PROCESSING"]
+        direction TB
+        P1["1. Query Intent Parsing"]
+        P2["2. Query Classification"]
+        P3["3. Hybrid Retrieval"]
+        P4["4. ML Reranking"]
+        P5["5. Model Routing"]
+        P6["6. Context Assembly"]
+        P7["7. Grounded Generation"]
+        P8["8. Citation Mapping"]
+    end
+    
+    subgraph OUTPUT["OUTPUT"]
+        A["Cited Answer"]
+        S["Source List"]
+    end
+    
+    Q --> P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7 --> P8
+    P8 --> A
+    P8 --> S
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">3</span>
+                Model Selection Matrix
+            </h2>
+            <div class="diagram-card">
+                <h3 class="diagram-title">Dynamic Model Routing</h3>
+                <p class="diagram-description">PPO-reinforcement-learning-based model selection optimized for cost, latency, and quality.</p>
+                <div class="mermaid">
+flowchart TB
+    subgraph DECISION["ROUTING DECISION TREE"]
+        Q["Query"]
+        T1{"Type?"}
+        T2{"Complexity?"}
+        T3{"Latency?"}
+        
+        Q --> T1
+        T1 -->|Factual| T2
+        T1 -->|Code| T3
+        T1 -->|Research| T2
+        T1 -->|Creative| T3
+        
+        T2 -->|Low| TIER1["Tier 1: Lightweight"]
+        T2 -->|Medium| TIER2["Tier 2: Mid-range"]
+        T2 -->|High| TIER3["Tier 3: Frontier"]
+        
+        T3 -->|Fast| TIER2
+        T3 -->|Deep| TIER3
+    end
+    
+    subgraph MODELS["MODEL PORTFOLIO"]
+        subgraph T1["Tier 1"]
+            S7B["Sonar 7B"]
+            EMBED["Embeddings"]
+        end
+        subgraph T2["Tier 2"]
+            S70B["Sonar 70B"]
+            GPT4["GPT-4o-mini"]
+            CLAUDE3["Claude 3.5 Sonnet"]
+        end
+        subgraph T3["Tier 3"]
+            S405B["PPLX 405B"]
+            GPT5["GPT-4o/5"]
+            CLAUDE4["Claude 3.5/4 Opus"]
+            GEMINI["Gemini 2.0"]
+        end
+    end
+    
+    TIER1 --> T1
+    TIER2 --> T2
+    TIER3 --> T3
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">4</span>
+                Infrastructure Architecture
+            </h2>
+            <div class="diagram-card">
+                <h3 class="diagram-title">Compute & Inference Stack</h3>
+                <div class="mermaid">
+flowchart TB
+    subgraph CLOUD["AWS Cloud"]
+        EKS["EKS (Kubernetes)"]
+        BEDROCK["Bedrock (Claude)"]
+    end
+    
+    subgraph GPU["GPU Fleet"]
+        HGX["HGX H100 Systems"]
+        POD4["4-GPU Pods"]
+        POD8["8-GPU Pods"]
+    end
+    
+    subgraph INF["Inference Layer"]
+        TRITON["Triton Server"]
+        SCHED["Scheduler"]
+        TRT["TensorRT-LLM"]
+    end
+    
+    subgraph ROSE["ROSE Engine"]
+        CORE["Python/PyTorch"]
+        RUST["Rust Serving"]
+        KV["KV Cache"]
+        SPEC["Speculative Decode"]
+    end
+    
+    CLOUD --> GPU
+    GPU --> INF
+    INF --> ROSE
+    
+    subgraph DISAGG["Disaggregated Serving"]
+        PRE["Prefill GPUs"]
+        DEC["Decode GPUs"]
+    end
+    
+    ROSE -.->|"Disaggregated"| DISAGG
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">5</span>
+                Key Components
+            </h2>
+            <div class="components-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Vespa AI Retrieval</h3>
+                    <ul class="component-list">
+                        <li>200B+ URL web index</li>
+                        <li>10K+ updates/second</li>
+                        <li>Hybrid dense + sparse search</li>
+                        <li>ML-based reranking</li>
+                        <li>Fine-grained content chunking</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Model Orchestration</h3>
+                    <ul class="component-list">
+                        <li>PPO-RL based routing</li>
+                        <li>20+ models simultaneously</li>
+                        <li>Cost-latency-quality balance</li>
+                        <li>Model-agnostic design</li>
+                        <li>Vendor risk mitigation</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">ROSE Inference</h3>
+                    <ul class="component-list">
+                        <li>Custom Python/PyTorch core</li>
+                        <li>Rust serving layer</li>
+                        <li>TensorRT-LLM optimization</li>
+                        <li>Speculative decoding</li>
+                        <li>Prefill-decode disaggregation</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Perplexity Computer</h3>
+                    <ul class="component-list">
+                        <li>19-model orchestration</li>
+                        <li>100+ MCP tool integrations</li>
+                        <li>Agentic workflows</li>
+                        <li>Sequential planning</li>
+                        <li>Parallel task execution</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">6</span>
+                Simplicity: Future Architecture
+            </h2>
+            <div class="diagram-card">
+                <h3 class="diagram-title">Next-Generation Answer Engine Blueprint</h3>
+                <p class="diagram-description">Architecture enhancements for building a better answer engine than Perplexity.ai</p>
+                <div class="mermaid">
+flowchart TB
+    subgraph CORE["Core Innovations"]
+        GRAPH["Graph-Based Knowledge"]
+        FEDERATED["Federated Learning"]
+        ONDEVICE["On-Device Processing"]
+        MULTIMODAL["Native Multimodal"]
+    end
+    
+    subgraph ENHANCE["Enhanced Capabilities"]
+        CONFIDENCE["Confidence Scoring"]
+        PROVENANCE["Full Provenance Chain"]
+        REALTIME["Real-time Streaming"]
+        COLLABORATIVE["Collaborative Search"]
+    end
+    
+    subgraph LAYERS["Architecture Layers"]
+        UI["Unified UI Layer"]
+        API["Unified API"]
+        ORCH["Intelligent Orchestrator"]
+        KNOWLEDGE["Knowledge Graph"]
+    end
+    
+    GRAPH --> KNOWLEDGE
+    FEDERATED --> KNOWLEDGE
+    ONDEVICE --> KNOWLEDGE
+    MULTIMODAL --> KNOWLEDGE
+    
+    CONFIDENCE --> ORCH
+    PROVENANCE --> ORCH
+    REALTIME --> ORCH
+    COLLABORATIVE --> ORCH
+    
+    UI --> API
+    API --> ORCH
+    ORCH --> KNOWLEDGE
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4a9eff;"></div>
+                        <span class="legend-label">Graph Knowledge: Relationship-aware retrieval</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #9b59b6;"></div>
+                        <span class="legend-label">On-Device: Privacy-first processing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #27ae60;"></div>
+                        <span class="legend-label">Confidence: Explainable AI outputs</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span class="legend-label">Collaborative: Team knowledge sharing</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Architecture Reference for Simplicity Project</p>
+            <p style="margin-top: 0.5rem;">Based on analysis of Perplexity.ai's public engineering documentation</p>
+        </footer>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#1a1a2e',
+                primaryTextColor: '#eaeaea',
+                primaryBorderColor: '#4a9eff',
+                lineColor: '#6a9eff',
+                secondaryColor: '#16213e',
+                tertiaryColor: '#0f3460',
+                background: '#1a1a2e',
+                mainBkg: '#1a1a2e',
+                nodeBorder: '#4a9eff',
+                clusterBkg: '#16213e',
+                titleColor: '#eaeaea',
+                edgeLabelBackground: '#1a1a2e'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            }
+        });
+    </script>
+</body>
+</html>

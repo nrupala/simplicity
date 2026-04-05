@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMPLICITY - Your Sovereign AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1a202c;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 16px; height: 100vh; display: flex; flex-direction: column; }
+        header {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 20px; font-weight: 700; color: #4c51bf; }
+        .logo span { font-size: 12px; color: #718096; font-weight: 400; margin-left: 8px; }
+        .tabs { display: flex; gap: 6px; }
+        .tab {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            color: #4a5568;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .tab:hover { background: #edf2f7; }
+        .tab.active { background: #4c51bf; color: white; }
+        .panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+            flex: 1;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        .panel.active { display: flex; }
+
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; }
+        .message { margin-bottom: 16px; display: flex; gap: 10px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { flex-direction: row-reverse; }
+        .message .avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .message.assistant .avatar { background: #4c51bf; color: white; }
+        .message.user .avatar { background: #48bb78; color: white; }
+        .message .bubble {
+            max-width: 85%; padding: 14px 18px; border-radius: 16px;
+            line-height: 1.7; font-size: 14.5px;
+        }
+        .message.assistant .bubble { background: #f7fafc; border: 1px solid #e2e8f0; border-top-left-radius: 4px; }
+        .message.user .bubble { background: #4c51bf; color: white; border-top-right-radius: 4px; }
+        .message .bubble .meta { font-size: 11px; color: #a0aec0; margin-top: 8px; }
+        .message.user .bubble .meta { color: rgba(255,255,255,0.7); }
+
+        /* Structured response formatting */
+        .message .bubble h1, .message .bubble h2, .message .bubble h3, .message .bubble h4 {
+            margin: 16px 0 8px 0; color: #2d3748; font-weight: 700;
+        }
+        .message .bubble h1 { font-size: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+        .message .bubble h2 { font-size: 17px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .message .bubble h3 { font-size: 15px; }
+        .message .bubble h4 { font-size: 14px; }
+        .message .bubble p { margin: 8px 0; }
+        .message .bubble ul, .message .bubble ol { margin: 8px 0; padding-left: 24px; }
+        .message .bubble li { margin: 4px 0; }
+        .message .bubble code {
+            background: #edf2f7; padding: 2px 6px; border-radius: 4px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px; color: #e53e3e;
+        }
+        .message .bubble pre {
+            background: #1a202c; color: #e2e8f0; padding: 14px 16px;
+            border-radius: 8px; overflow-x: auto; margin: 10px 0;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px; line-height: 1.5;
+        }
+        .message .bubble pre code {
+            background: none; padding: 0; color: inherit; font-size: inherit;
+        }
+        .message .bubble blockquote {
+            border-left: 3px solid #4c51bf; padding: 8px 14px; margin: 10px 0;
+            background: #ebf4ff; border-radius: 0 6px 6px 0; color: #4a5568;
+        }
+        .message .bubble table {
+            border-collapse: collapse; width: 100%; margin: 10px 0;
+            font-size: 13px;
+        }
+        .message .bubble th, .message .bubble td {
+            border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left;
+        }
+        .message .bubble th { background: #edf2f7; font-weight: 600; }
+        .message .bubble hr { border: none; border-top: 1px solid #e2e8f0; margin: 14px 0; }
+        .message .bubble strong { font-weight: 700; color: #2d3748; }
+        .message .bubble em { font-style: italic; }
+
+        .input-area { display: flex; gap: 10px; padding: 16px 20px; border-top: 1px solid #e2e8f0; background: white; border-radius: 0 0 12px 12px; }
+        .input-area textarea {
+            flex: 1; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px;
+            font-size: 14px; outline: none; resize: none; min-height: 44px; max-height: 120px;
+            font-family: inherit; line-height: 1.5;
+        }
+        .input-area textarea:focus { border-color: #4c51bf; }
+        .input-area button {
+            padding: 10px 20px; background: #4c51bf; color: white; border: none;
+            border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: background 0.2s; align-self: flex-end; white-space: nowrap;
+        }
+        .input-area button:hover { background: #434190; }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .provider-bar { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; background: #fafafa; flex-wrap: wrap; }
+        .provider-bar label { font-size: 12px; font-weight: 600; color: #4a5568; }
+        .provider-bar select {
+            padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px;
+            font-size: 12px; outline: none; background: white; cursor: pointer;
+        }
+        .provider-bar select:focus { border-color: #4c51bf; }
+        .provider-status { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+        .provider-status.online { background: #c6f6d5; color: #22543d; }
+        .provider-status.offline { background: #fed7d7; color: #742a2a; }
+        .context-badge { font-size: 10px; color: #718096; margin-left: auto; }
+
+        .knowledge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; padding: 20px; overflow-y: auto; }
+        .knowledge-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; }
+        .knowledge-card .entity { font-weight: 600; color: #2d3748; font-size: 14px; }
+        .knowledge-card .relation { font-size: 11px; color: #718096; margin-top: 4px; }
+
+        .sovereignty-item { display: flex; align-items: center; gap: 14px; padding: 14px; background: #f7fafc; border-radius: 8px; margin-bottom: 10px; }
+        .sovereignty-item .icon { font-size: 22px; }
+        .sovereignty-item .title { font-weight: 600; color: #2d3748; font-size: 14px; }
+        .sovereignty-item .desc { font-size: 13px; color: #718096; }
+
+        .settings-scroll { overflow-y: auto; flex: 1; padding: 20px; }
+        .provider-card { background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+        .provider-card.active { border-color: #4c51bf; background: #ebf4ff; }
+        .provider-card .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .provider-card .name { font-weight: 600; font-size: 15px; color: #2d3748; }
+        .provider-card .config { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
+        .provider-card.active .config { display: block; }
+        .setting-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .setting-row label { font-size: 13px; color: #4a5568; min-width: 120px; font-weight: 500; }
+        .setting-row select, .setting-row input[type="text"], .setting-row input[type="number"] {
+            flex: 1; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; outline: none;
+        }
+        .setting-row input[type="range"] { flex: 1; }
+        .setting-row .value-display { font-size: 13px; color: #4c51bf; font-weight: 600; min-width: 45px; text-align: right; }
+
+        .btn { padding: 6px 14px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #4c51bf; color: white; }
+        .btn-success { background: #48bb78; color: white; }
+        .btn-info { background: #4299e1; color: white; }
+        .btn-danger { background: #e53e3e; color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .empty-state { text-align: center; padding: 40px; color: #a0aec0; }
+        .status { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+        .status.online { background: #c6f6d5; color: #22543d; }
+        .status.offline { background: #fed7d7; color: #742a2a; }
+
+        .welcome { text-align: center; padding: 50px 20px; color: #718096; }
+        .welcome h2 { font-size: 26px; color: #2d3748; margin-bottom: 10px; }
+        .welcome p { font-size: 15px; margin-bottom: 20px; }
+        .suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .suggestion { padding: 8px 14px; background: #edf2f7; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .suggestion:hover { background: #4c51bf; color: white; }
+
+        .streaming-cursor::after { content: '▋'; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .panel-content { padding: 20px; overflow-y: auto; flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">SIMPLICITY <span>Your Sovereign AI Agent</span></div>
+            <div class="tabs">
+                <button class="tab active" data-tab="query">Chat</button>
+                <button class="tab" data-tab="knowledge">Knowledge</button>
+                <button class="tab" data-tab="documents">Documents</button>
+                <button class="tab" data-tab="settings">Settings</button>
+                <button class="tab" data-tab="sovereignty">Sovereignty</button>
+            </div>
+        </header>
+
+        <div class="panel active" id="panel-query">
+            <div class="provider-bar">
+                <label>Provider:</label>
+                <select id="provider-select"></select>
+                <span class="provider-status" id="provider-status"></span>
+                <label>Model:</label>
+                <select id="model-select"></select>
+                <button class="btn btn-info" id="refresh-models-btn" style="padding: 4px 8px; font-size: 10px;">Refresh</button>
+                <span class="context-badge" id="context-badge">Context: 0 messages</span>
+                <button class="btn btn-danger" id="clear-chat-btn" style="padding: 4px 8px; font-size: 10px;">Clear Chat</button>
+            </div>
+            <div class="chat-container" id="chat-container">
+                <div class="welcome" id="welcome-screen">
+                    <h2>Welcome to SIMPLICITY</h2>
+                    <p>Your sovereign AI agent. All data stays on your machine.</p>
+                    <div class="suggestions">
+                        <div class="suggestion" onclick="askSuggestion(this)">What is SIMPLICITY?</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">How does the knowledge graph work?</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">Explain data sovereignty</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">What models can I use?</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">How is my data encrypted?</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">Can I export my knowledge?</div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-area">
+                <textarea id="query-input" placeholder="Ask anything... (Shift+Enter for new line)" rows="1"></textarea>
+                <button id="query-btn">Send</button>
+            </div>
+        </div>
+
+        <div class="panel" id="panel-knowledge">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;"><h2 style="font-size: 18px;">Knowledge Graph</h2></div>
+            <div id="knowledge-container" class="knowledge-grid"></div>
+        </div>
+
+        <div class="panel" id="panel-documents">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 18px;">Documents</h2>
+                <div>
+                    <button id="upload-doc-btn" class="btn btn-success" style="margin-right: 8px;">Upload Files</button>
+                    <input type="file" id="doc-upload" multiple style="display: none;" />
+                </div>
+            </div>
+            <div id="documents-container" style="padding: 20px; overflow-y: auto; flex: 1;"></div>
+        </div>
+
+        <div class="panel" id="panel-settings">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;"><h2 style="font-size: 18px;">Settings</h2></div>
+            <div class="settings-scroll" id="settings-container"></div>
+        </div>
+
+        <div class="panel" id="panel-sovereignty">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;"><h2 style="font-size: 18px;">Data Sovereignty</h2></div>
+            <div class="panel-content">
+                <div class="sovereignty-item"><div class="icon">🔐</div><div><div class="title">Your Data is Encrypted</div><div class="desc">All knowledge is stored locally with GPG encryption</div></div></div>
+                <div class="sovereignty-item"><div class="icon">👤</div><div><div class="title">You Own Your Data</div><div class="desc">No cloud storage, complete local control</div></div></div>
+                <div class="sovereignty-item"><div class="icon">🔄</div><div><div class="title">Full Portability</div><div class="desc">Export and import your data anytime</div></div></div>
+                <div style="margin-top: 16px; display: flex; gap: 10px;">
+                    <button id="export-btn" class="btn btn-success">Export Data</button>
+                    <button id="import-btn" class="btn btn-info">Import Data</button>
+                    <input type="file" id="import-file" accept=".json" style="display: none;" />
+                </div>
+                <div style="margin-top: 12px;"><span class="status" id="backend-status">Checking...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = '/api';
+        const userId = 'default-user';
+        let selectedProvider = 'ollama';
+        let selectedModel = '';
+        let conversationHistory = [];
+        let isStreaming = false;
+        let providerConfig = {
+            ollama: { host: 'http://localhost:11434', model: 'gemma3:4b', temperature: 0.7, maxTokens: 8192 },
+            lmstudio: { host: 'http://localhost:1234', model: '', temperature: 0.7, maxTokens: 8192 },
+            opencode: { host: 'http://localhost:50561', model: 'codellama', temperature: 0.7, maxTokens: 8192 },
+            dmr: { host: 'http://localhost:12434', model: 'llama3.2', temperature: 0.7, maxTokens: 8192 }
+        };
+
+        try {
+            const saved = localStorage.getItem('simplicity-config');
+            if (saved) providerConfig = { ...providerConfig, ...JSON.parse(saved) };
+            const savedHistory = localStorage.getItem('simplicity-history');
+            if (savedHistory) conversationHistory = JSON.parse(savedHistory);
+        } catch {}
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+                if (tab.dataset.tab === 'knowledge') loadKnowledge();
+                if (tab.dataset.tab === 'documents') loadDocuments();
+                if (tab.dataset.tab === 'settings') renderSettings();
+            });
+        });
+
+        const providerSelect = document.getElementById('provider-select');
+        const modelSelect = document.getElementById('model-select');
+        const providerStatus = document.getElementById('provider-status');
+        const contextBadge = document.getElementById('context-badge');
+
+        function updateContextBadge() {
+            contextBadge.textContent = `Context: ${conversationHistory.length} messages`;
+        }
+
+        async function loadProviders() {
+            try {
+                const res = await fetch(API + '/query/providers');
+                const data = await res.json();
+                providerSelect.innerHTML = data.providers.map(p =>
+                    `<option value="${p.id}" ${p.id === data.default ? 'selected' : ''}>${p.label}</option>`
+                ).join('');
+                selectedProvider = data.default;
+                updateProviderStatus(data);
+                await loadModels();
+            } catch (err) { console.error('Failed to load providers:', err); }
+        }
+
+        function updateProviderStatus(data) {
+            const provider = data.providers.find(p => p.id === selectedProvider);
+            if (provider) {
+                providerStatus.textContent = provider.available ? 'Online' : 'Offline';
+                providerStatus.className = 'provider-status ' + (provider.available ? 'online' : 'offline');
+            }
+        }
+
+        async function loadModels() {
+            try {
+                const res = await fetch(API + '/query/models/' + selectedProvider);
+                const data = await res.json();
+                const models = data.models || [];
+                const cfg = providerConfig[selectedProvider];
+                modelSelect.innerHTML = models.map(m =>
+                    `<option value="${m.name}" ${m.name === cfg?.model ? 'selected' : ''}>${m.name}</option>`
+                ).join('');
+                if (models.length === 0 && cfg?.model) {
+                    modelSelect.innerHTML = `<option value="${cfg.model}">${cfg.model}</option>`;
+                }
+                selectedModel = modelSelect.value || cfg?.model || '';
+            } catch (err) { console.error('Failed to load models:', err); }
+        }
+
+        providerSelect.addEventListener('change', async () => {
+            selectedProvider = providerSelect.value;
+            try {
+                await fetch(API + '/query/provider', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: selectedProvider }) });
+                const res = await fetch(API + '/query/providers');
+                updateProviderStatus(await res.json());
+                await loadModels();
+            } catch (err) { console.error('Failed to set provider:', err); }
+        });
+
+        modelSelect.addEventListener('change', () => { selectedModel = modelSelect.value; });
+        document.getElementById('refresh-models-btn').addEventListener('click', loadModels);
+
+        document.getElementById('clear-chat-btn').addEventListener('click', async () => {
+            if (!confirm('Clear conversation history?')) return;
+            conversationHistory = [];
+            localStorage.removeItem('simplicity-history');
+            try { await fetch(API + '/query/history/' + userId, { method: 'DELETE' }); } catch {}
+            document.getElementById('chat-container').innerHTML = `
+                <div class="welcome" id="welcome-screen">
+                    <h2>Welcome to SIMPLICITY</h2>
+                    <p>Your sovereign AI agent. All data stays on your machine.</p>
+                    <div class="suggestions">
+                        <div class="suggestion" onclick="askSuggestion(this)">What is SIMPLICITY?</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">How does the knowledge graph work?</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">Explain data sovereignty</div>
+                        <div class="suggestion" onclick="askSuggestion(this)">What models can I use?</div>
+                    </div>
+                </div>`;
+            updateContextBadge();
+        });
+
+        const queryInput = document.getElementById('query-input');
+        const queryBtn = document.getElementById('query-btn');
+        const chatContainer = document.getElementById('chat-container');
+
+        queryInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        queryBtn.addEventListener('click', sendQuery);
+        queryInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+        });
+
+        window.askSuggestion = function(el) { queryInput.value = el.textContent; sendQuery(); };
+
+        // Lightweight markdown renderer
+        function renderMarkdown(text) {
+            let html = text;
+            // Code blocks
+            html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            // Headers
+            html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+            // Bold and italic
+            html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            // Blockquotes
+            html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+            // Horizontal rule
+            html = html.replace(/^---$/gm, '<hr>');
+            // Unordered lists
+            html = html.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+            // Ordered lists
+            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+            // Tables
+            html = html.replace(/^\|(.+)\|$/gm, (match) => {
+                const cells = match.split('|').filter(c => c.trim());
+                if (cells.every(c => /^[\s-:]+$/.test(c))) return '<!--table-sep-->';
+                const tag = 'td';
+                const row = cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('');
+                return `<tr>${row}</tr>`;
+            });
+            html = html.replace(/(<tr>.*<\/tr>\n?(<!--table-sep-->\n?)?)+/g, (match) => {
+                let table = match.replace(/<!--table-sep-->\n?/g, '');
+                table = table.replace(/<tr>(.*?)<\/tr>/, (m, inner) => {
+                    return '<thead><tr>' + inner.replace(/<td>/g, '<th>').replace(/<\/td>/g, '</th>') + '</tr></thead><tbody>';
+                });
+                return '<table>' + table + '</tbody></table>';
+            });
+            // Paragraphs
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = '<p>' + html + '</p>';
+            // Clean up
+            html = html.replace(/<p><(h[1-4]|ul|ol|pre|blockquote|table|hr)/g, '<$1');
+            html = html.replace(/<\/(h[1-4]|ul|ol|pre|blockquote|table)><\/p>/g, '</$1>');
+            html = html.replace(/<p><\/p>/g, '');
+            html = html.replace(/<p><br\s*\/?><\/p>/g, '');
+            return html;
+        }
+
+        function addMessage(role, content, meta = '') {
+            const welcome = document.getElementById('welcome-screen');
+            if (welcome) welcome.remove();
+
+            const msg = document.createElement('div');
+            msg.className = 'message ' + role;
+            const renderedContent = role === 'assistant' ? renderMarkdown(content) : escapeHtml(content);
+            msg.innerHTML = `
+                <div class="avatar">${role === 'user' ? '👤' : '🧠'}</div>
+                <div class="bubble">
+                    <div class="content">${renderedContent}</div>
+                    ${meta ? `<div class="meta">${meta}</div>` : ''}
+                </div>
+            `;
+            chatContainer.appendChild(msg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return msg;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function sendQuery() {
+            const query = queryInput.value.trim();
+            if (!query || isStreaming) return;
+
+            isStreaming = true;
+            queryBtn.disabled = true;
+            queryBtn.textContent = '...';
+            queryInput.value = '';
+            queryInput.style.height = 'auto';
+
+            addMessage('user', escapeHtml(query));
+            const assistantMsg = addMessage('assistant', '<span class="streaming-cursor"></span>');
+            const contentEl = assistantMsg.querySelector('.content');
+
+            conversationHistory.push({ role: 'user', content: query });
+            updateContextBadge();
+
+            const startTime = Date.now();
+            let fullText = '';
+
+            try {
+                const res = await fetch(API + '/query/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query,
+                        userId,
+                        provider: selectedProvider,
+                        model: selectedModel,
+                        history: conversationHistory
+                    })
+                });
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let finalMeta = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.error) {
+                                    fullText = `Error: ${data.error}`;
+                                    break;
+                                }
+                                if (data.token) {
+                                    fullText += data.token;
+                                    contentEl.textContent = fullText;
+                                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                                }
+                                if (data.done) {
+                                    conversationHistory.push({ role: 'assistant', content: fullText });
+                                    updateContextBadge();
+                                    finalMeta = `${selectedProvider} | ${data.model || selectedModel} | ${data.conversationLength || conversationHistory.length} msgs | ${data.processingTime || Date.now() - startTime}ms`;
+                                    try { localStorage.setItem('simplicity-history', JSON.stringify(conversationHistory)); } catch {}
+                                }
+                            } catch {}
+                        }
+                    }
+                }
+
+                if (!fullText) fullText = 'No response generated.';
+                contentEl.innerHTML = renderMarkdown(fullText);
+                if (finalMeta) {
+                    let metaEl = assistantMsg.querySelector('.meta');
+                    if (!metaEl) {
+                        metaEl = document.createElement('div');
+                        metaEl.className = 'meta';
+                        assistantMsg.querySelector('.bubble').appendChild(metaEl);
+                    }
+                    metaEl.textContent = finalMeta;
+                }
+
+            } catch (err) {
+                contentEl.innerHTML = `<span style="color: #e53e3e;">Error: ${err.message}</span>`;
+            } finally {
+                isStreaming = false;
+                queryBtn.disabled = false;
+                queryBtn.textContent = 'Send';
+                queryInput.focus();
+            }
+        }
+
+        async function loadKnowledge() {
+            const container = document.getElementById('knowledge-container');
+            container.innerHTML = '<p>Loading...</p>';
+            try {
+                const res = await fetch(API + '/knowledge/graph/' + userId);
+                const data = await res.json();
+                const nodes = data.graph?.nodes || [];
+                if (nodes.length === 0) {
+                    container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">No knowledge nodes yet. Start chatting to build your knowledge graph!</div>';
+                    return;
+                }
+                container.innerHTML = nodes.map(n =>
+                    `<div class="knowledge-card"><div class="entity">${n.label || n.id}</div><div class="relation">${n.type}</div></div>`
+                ).join('');
+            } catch (err) { container.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">Failed to load knowledge: ${err.message}</div>`; }
+        }
+
+        async function loadDocuments() {
+            const container = document.getElementById('documents-container');
+            container.innerHTML = '<p>Loading...</p>';
+            try {
+                const res = await fetch(API + '/documents/list/' + userId);
+                const data = await res.json();
+                if (data.documents.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No documents uploaded yet. Upload text files, code, markdown, JSON, CSV, etc.</div>';
+                    return;
+                }
+                container.innerHTML = `
+                    <div style="margin-bottom: 12px; font-size: 13px; color: #718096;">
+                        ${data.documents.length} documents | ${data.totalChunks} text chunks indexed
+                    </div>
+                    <div style="display: grid; gap: 8px;">
+                        ${data.documents.map(d => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 14px;">${d.filename}</div>
+                                    <div style="font-size: 12px; color: #718096;">${d.file_type} • ${(d.file_size / 1024).toFixed(1)} KB • ${new Date(d.created_at).toLocaleDateString()}</div>
+                                </div>
+                                <button class="btn btn-danger" onclick="deleteDocument(${d.id})" style="padding: 4px 10px; font-size: 11px;">Delete</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (err) { container.innerHTML = `<div class="empty-state">Failed to load documents: ${err.message}</div>`; }
+        }
+
+        window.deleteDocument = async function(docId) {
+            if (!confirm('Delete this document?')) return;
+            try {
+                await fetch(API + '/documents/' + userId + '/' + docId, { method: 'DELETE' });
+                loadDocuments();
+            } catch (err) { alert('Delete failed: ' + err.message); }
+        };
+
+        document.getElementById('upload-doc-btn').addEventListener('click', () => {
+            document.getElementById('doc-upload').click();
+        });
+
+        document.getElementById('doc-upload').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (!files.length) return;
+
+            const formData = new FormData();
+            for (const file of files) formData.append('files', file);
+            formData.append('userId', userId);
+
+            try {
+                const res = await fetch(API + '/documents/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                alert(`Uploaded: ${data.uploaded} new, ${data.duplicates} duplicates. Total chunks: ${data.totalChunks}`);
+                loadDocuments();
+            } catch (err) { alert('Upload failed: ' + err.message); }
+            e.target.value = '';
+        });
+
+        function renderSettings() {
+            const container = document.getElementById('settings-container');
+            const providers = [
+                { id: 'ollama', label: 'Ollama', defaultPort: 11434 },
+                { id: 'lmstudio', label: 'LM Studio', defaultPort: 1234 },
+                { id: 'opencode', label: 'OpenCode', defaultPort: 8080 },
+                { id: 'dmr', label: 'Docker Model Runner', defaultPort: 8081 }
+            ];
+            container.innerHTML = providers.map(p => {
+                const cfg = providerConfig[p.id] || {};
+                const isActive = p.id === selectedProvider;
+                return `
+                <div class="provider-card ${isActive ? 'active' : ''}" data-provider="${p.id}">
+                    <div class="header">
+                        <span class="name">${p.label}</span>
+                        <button class="btn ${isActive ? 'btn-primary' : 'btn-info'}" onclick="selectProvider('${p.id}')">${isActive ? 'Active' : 'Select'}</button>
+                    </div>
+                    <div class="config">
+                        <div class="setting-row"><label>Host URL</label><input type="text" id="host-${p.id}" value="${cfg.host || 'http://localhost:' + p.defaultPort}" onchange="saveProviderConfig('${p.id}')" /></div>
+                        <div class="setting-row"><label>Model</label><input type="text" id="model-${p.id}" value="${cfg.model || ''}" placeholder="Model name" onchange="saveProviderConfig('${p.id}')" /></div>
+                        <div class="setting-row"><label>Temperature</label><input type="range" id="temp-${p.id}" min="0" max="2" step="0.1" value="${cfg.temperature ?? 0.7}" oninput="document.getElementById('temp-val-${p.id}').textContent=this.value; saveProviderConfig('${p.id}')" /><span class="value-display" id="temp-val-${p.id}">${cfg.temperature ?? 0.7}</span></div>
+                        <div class="setting-row"><label>Max Tokens (Context)</label><input type="number" id="tokens-${p.id}" value="${cfg.maxTokens || 8192}" min="512" max="131072" step="1024" onchange="saveProviderConfig('${p.id}')" /></div>
+                        <button class="btn btn-success" onclick="testProvider('${p.id}')" style="margin-top: 6px;">Test Connection</button>
+                        <span id="test-result-${p.id}" style="margin-left: 10px; font-size: 13px;"></span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window.selectProvider = function(id) {
+            selectedProvider = id;
+            providerSelect.value = id;
+            fetch(API + '/query/provider', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: id }) });
+            renderSettings();
+            loadModels();
+        };
+
+        function saveProviderConfig(id) {
+            providerConfig[id] = {
+                host: document.getElementById('host-' + id).value,
+                model: document.getElementById('model-' + id).value,
+                temperature: parseFloat(document.getElementById('temp-' + id).value),
+                maxTokens: parseInt(document.getElementById('tokens-' + id).value)
+            };
+            localStorage.setItem('simplicity-config', JSON.stringify(providerConfig));
+            fetch(API + '/query/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: id, config: providerConfig[id] }) });
+        }
+
+        window.testProvider = async function(id) {
+            const resultEl = document.getElementById('test-result-' + id);
+            resultEl.textContent = 'Testing...';
+            try {
+                const res = await fetch(API + '/query/test/' + id);
+                const data = await res.json();
+                resultEl.textContent = data.available ? 'Connected' : 'Not reachable';
+                resultEl.style.color = data.available ? '#22543d' : '#742a2a';
+            } catch { resultEl.textContent = 'Test failed'; resultEl.style.color = '#742a2a'; }
+        };
+
+        document.getElementById('export-btn').addEventListener('click', async () => {
+            try {
+                const res = await fetch(API + '/portability/export/' + userId);
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'simplicity-data.json'; a.click();
+                URL.revokeObjectURL(url);
+            } catch (err) { alert('Export failed: ' + err.message); }
+        });
+
+        document.getElementById('import-btn').addEventListener('click', () => { document.getElementById('import-file').click(); });
+        document.getElementById('import-file').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                await fetch(API + '/portability/import/' + userId, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ importData: data }) });
+                alert('Data imported successfully!');
+            } catch (err) { alert('Import failed: ' + err.message); }
+        });
+
+        async function checkBackend() {
+            const statusEl = document.getElementById('backend-status');
+            try {
+                const res = await fetch('/health');
+                if (res.ok) { statusEl.textContent = 'Backend Online'; statusEl.className = 'status online'; }
+                else { throw new Error('Not OK'); }
+            } catch { statusEl.textContent = 'Backend Offline'; statusEl.className = 'status offline'; }
+        }
+
+        function restoreHistory() {
+            if (conversationHistory.length > 0) {
+                const welcome = document.getElementById('welcome-screen');
+                if (welcome) welcome.remove();
+                conversationHistory.forEach(msg => {
+                    if (msg.role === 'user') addMessage('user', escapeHtml(msg.content));
+                    else addMessage('assistant', escapeHtml(msg.content));
+                });
+            }
+            updateContextBadge();
+        }
+
+        loadProviders();
+        checkBackend();
+        restoreHistory();
+        setInterval(checkBackend, 30000);
+    </script>
+</body>
+</html>

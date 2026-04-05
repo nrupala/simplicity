@@ -1,0 +1,32 @@
+{
+    "name": "simplicity",
+    "version": "1.0.0",
+    "description": "SIMPLICITY - Your Sovereign AI Agent. A Perplexity-like AI answer engine that runs locally with user sovereignty, knowledge graphs, and advanced AI capabilities.",
+    "main": "simplicity-project/backend/src/server.js",
+    "scripts": {
+        "install:all": "cd simplicity-project/backend && npm install",
+        "start": "cd simplicity-project/backend && npm start",
+        "dev": "cd simplicity-project/backend && npm start",
+        "test": "cd simplicity-project/backend && npm test",
+        "setup": "npm run install:all",
+        "clean": "rm -rf simplicity-project/backend/node_modules"
+    },
+    "keywords": [
+        "ai",
+        "local-ai",
+        "sovereignty",
+        "knowledge-graph",
+        "perplexity",
+        "ollama",
+        "privacy"
+    ],
+    "author": "SIMPLICITY Team",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nrupala/simplicity"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
