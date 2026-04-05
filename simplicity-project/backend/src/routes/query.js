@@ -236,6 +236,25 @@ router.post('/stream', async (req, res) => {
             }
         } catch (error) {
             console.error('Stream generation error:', error);
+            const errorMsg = error.message || '';
+            if (errorMsg.includes('image') && errorMsg.includes('does not support')) {
+                res.write(`data: ${JSON.stringify({ error: 'This model does not support image input. Please use a text-only query or switch to a vision-capable model.', done: true })}\n\n`);
+            } else if (errorMsg.includes('context full') || errorMsg.includes('exceeds')) {
+                try {
+                    await this.createSession(options);
+                    const result = await adapter.generate(prompt);
+                    const text = typeof result === 'string' ? result : (result.text || '');
+                    conversation.push({ role: 'assistant', content: text });
+                    trimContext(conversation);
+                    await extractKnowledge(userId, query, text);
+                    res.write(`data: ${JSON.stringify({ token: text, done: true })}\n\n`);
+                    res.write(`data: ${JSON.stringify({ done: true, model: adapter.config.model, knowledgeUsed: correlation.userKnowledge.length, processingTime: Date.now() - startTime, conversationLength: conversation.length })}\n\n`);
+                } catch (fallbackError) {
+                    res.write(`data: ${JSON.stringify({ error: fallbackError.message, done: true })}\n\n`);
+                }
+            } else {
+                res.write(`data: ${JSON.stringify({ error: error.message, done: true })}\n\n`);
+            }
             try {
                 const result = await adapter.generate(prompt);
                 const text = typeof result === 'string' ? result : (result.text || '');

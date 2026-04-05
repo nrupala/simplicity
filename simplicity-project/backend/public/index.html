@@ -357,12 +357,20 @@
                 const res = await fetch(API + '/query/providers');
                 const data = await res.json();
                 providerSelect.innerHTML = data.providers.map(p =>
-                    `<option value="${p.id}" ${p.id === data.default ? 'selected' : ''}>${p.label}</option>`
+                    `<option value="${p.id}" ${p.id === data.default ? 'selected' : ''}>${p.label} ${p.available ? '✓' : '✗'}</option>`
                 ).join('');
                 selectedProvider = data.default;
                 updateProviderStatus(data);
-                await loadModels();
-            } catch (err) { console.error('Failed to load providers:', err); }
+                try {
+                    await loadModels();
+                } catch (modelErr) {
+                    console.warn('Failed to load models for', selectedProvider, modelErr);
+                    modelSelect.innerHTML = '<option value="">No models loaded</option>';
+                }
+            } catch (err) {
+                console.error('Failed to load providers:', err);
+                providerSelect.innerHTML = '<option value="native">SIMPLICITY Engine</option>';
+            }
         }
 
         function updateProviderStatus(data) {
@@ -379,14 +387,20 @@
                 const data = await res.json();
                 const models = data.models || [];
                 const cfg = providerConfig[selectedProvider];
-                modelSelect.innerHTML = models.map(m =>
-                    `<option value="${m.name}" ${m.name === cfg?.model ? 'selected' : ''}>${m.name}</option>`
-                ).join('');
-                if (models.length === 0 && cfg?.model) {
+                if (models.length > 0) {
+                    modelSelect.innerHTML = models.map(m =>
+                        `<option value="${m.name}" ${m.name === cfg?.model ? 'selected' : ''}>${m.name}</option>`
+                    ).join('');
+                } else if (cfg?.model) {
                     modelSelect.innerHTML = `<option value="${cfg.model}">${cfg.model}</option>`;
+                } else {
+                    modelSelect.innerHTML = '<option value="">Select a model</option>';
                 }
                 selectedModel = modelSelect.value || cfg?.model || '';
-            } catch (err) { console.error('Failed to load models:', err); }
+            } catch (err) {
+                console.error('Failed to load models:', err);
+                modelSelect.innerHTML = '<option value="">No models available</option>';
+            }
         }
 
         providerSelect.addEventListener('change', async () => {
