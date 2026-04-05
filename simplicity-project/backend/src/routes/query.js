@@ -5,6 +5,7 @@ const { personifyResponse } = require('../engines/personification');
 const modelRegistry = require('../models/registry');
 const { addKnowledge } = require('../engines/knowledge-graph');
 const { searchChunks } = require('../engines/documents');
+const { hybridSearch, embedAllChunks, getCacheStats, demoteColdChunks } = require('../engines/inference/embedding-engine');
 
 const router = express.Router();
 
@@ -142,12 +143,15 @@ router.post('/stream', async (req, res) => {
         const startTime = Date.now();
         const correlation = await processQuery(query, userId);
 
-        // Search documents for relevant context
+        // Search documents for relevant context (hybrid: semantic + keyword)
         let documentContext = '';
+        let docResults = [];
         try {
-            const docResults = await searchChunks(userId, query, 5);
+            docResults = await hybridSearch(userId, query, 5);
             if (docResults.length > 0) {
-                documentContext = docResults.map(d => `[${d.filename}]: ${d.content}`).join('\n\n');
+                documentContext = docResults.map(d =>
+                    `[${d.filename}] (${d.method}, ${(d.relevance * 100).toFixed(0)}%): ${d.content}`
+                ).join('\n\n');
             }
         } catch {}
 
@@ -281,12 +285,14 @@ router.post('/', async (req, res) => {
         const startTime = Date.now();
         const correlation = await processQuery(query, userId);
 
-        // Search documents for relevant context
+        // Search documents for relevant context (hybrid: semantic + keyword)
         let documentContext = '';
         try {
-            const docResults = await searchChunks(userId, query, 5);
+            const docResults = await hybridSearch(userId, query, 5);
             if (docResults.length > 0) {
-                documentContext = docResults.map(d => `[${d.filename}]: ${d.content}`).join('\n\n');
+                documentContext = docResults.map(d =>
+                    `[${d.filename}] (${d.method}, ${(d.relevance * 100).toFixed(0)}%): ${d.content}`
+                ).join('\n\n');
             }
         } catch {}
 

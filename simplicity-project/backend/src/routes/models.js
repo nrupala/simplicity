@@ -2,6 +2,7 @@ const express = require('express');
 const modelRegistry = require('../models/registry');
 const { downloadModel, listModels, deleteModel, getSystemMemory, estimateMemoryRequirements, updateModelMetadata } = require('../engines/inference/model-loader');
 const inferenceEngine = require('../engines/inference/inference');
+const { embedAllChunks, getCacheStats, demoteColdChunks } = require('../engines/inference/embedding-engine');
 
 const router = express.Router();
 
@@ -305,5 +306,28 @@ function getMemoryRecommendations(memory, memLevel, status) {
 
     return recommendations;
 }
+
+// Embed all document chunks
+router.post('/embed/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await embedAllChunks(userId);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get cache statistics
+router.get('/cache/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const stats = await getCacheStats(userId);
+        const actions = await demoteColdChunks(userId);
+        res.json({ stats, actions });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 module.exports = router;
