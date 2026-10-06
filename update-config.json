@@ -5,7 +5,7 @@
   "app": {
     "id": "com.simplicity.app",
     "name": "Simplicity",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "updates": {
     "checkInterval": "1h",
