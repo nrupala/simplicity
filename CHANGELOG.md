@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Portfolio certification: CONTRIBUTING.md with the PR-flow discipline
+  (draft PR -> tests green -> owner merges; no direct pushes to main; each PR
+  adds a CHANGELOG entry under Unreleased and bumps SemVer).
+- Portfolio certification: ATTRIBUTION.md (owned by Nrupal Akolkar).
+
+### Changed
+- Portfolio certification: version bump 1.0.0 -> 1.0.1 (Maven parent POM +
+  all module POM parent references, simplicity-web package.json,
+  update-config.json). NOTE: simplicity-api/pom.xml referenced parent
+  0.1.0-SNAPSHOT while the parent was 1.0.0 (pre-existing inconsistency);
+  brought to 1.0.1 with this bump.
+
+### Added
 - Initial release structure
 - Simplicity Model Binder module with support for:
   - Ollama (local models)
