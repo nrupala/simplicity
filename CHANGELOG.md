@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added the missing `LICENSE` file (MIT), as declared in the repo; canonical license text, no license change.
+
+
 ### Added
 - Portfolio certification: CONTRIBUTING.md with the PR-flow discipline
   (draft PR -> tests green -> owner merges; no direct pushes to main; each PR
