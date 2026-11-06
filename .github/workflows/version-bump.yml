@@ -18,6 +18,8 @@ jobs:
   bump-version:
     name: Bump Version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     outputs:
       new_version: ${{ steps.version-bump.outputs.new_version }}
